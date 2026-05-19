@@ -1,0 +1,2152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A personal trip journal — daily messages and photo memories." />
+  <title>Your Trip Journal 🌸</title>
+
+  <!--
+    =====================================================================
+    TRIP JOURNAL — Single-file HTML/CSS/JS App
+    Phase 1: Config & Data Layer ✅
+    Phase 2: HTML Skeleton        ✅
+    Phase 3: CSS Styling          ✅
+    Phase 4: JavaScript Logic     ✅
+    Phase 5: Polish & Validation  ✅
+    =====================================================================
+  -->
+
+  <!-- Google Fonts — Nunito for friendly, rounded readability -->
+  <!-- Fallback: system-ui, sans-serif (works offline after first load) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PHASE 3 — FULL CSS
+       ═══════════════════════════════════════════════════════════════ -->
+  <style>
+    /* ─────────────────────────────────────────────────────────────
+       DESIGN TOKENS — Blue / Orchid / Tulip / Lily palette
+       Her fav colour: blue. Fav flowers: orchid, tulip, lily.
+       ───────────────────────────────────────────────────────────── */
+    :root {
+      /* Background & surface — soft lily-petal blue-white */
+      --bg-page        : #F2F6FF;
+      --bg-card        : #FFFFFF;
+      --bg-card-soft   : #EBF0FF;   /* periwinkle tint */
+      --bg-upload      : #F5F8FF;   /* near-white cool blue */
+
+      /* Brand / accent — Blue → Orchid-lilac */
+      --accent-primary : #4E7FD4;   /* cornflower blue — main CTA */
+      --accent-mid     : #7BA8E8;   /* periwinkle — secondary / borders */
+      --accent-light   : #B8D0F5;   /* powder blue — light borders */
+      --accent-pale    : #E8F0FC;   /* near-white blue — hover backgrounds */
+
+      /* Progress bar gradient — blue → orchid purple */
+      --grad-bar       : linear-gradient(90deg, #4E7FD4 0%, #9B7DD4 100%);
+
+      /* Text — cool navy tones */
+      --text-dark      : #2A3055;   /* deep navy */
+      --text-mid       : #4A5A8C;   /* slate blue */
+      --text-soft      : #8898C4;   /* muted blue-grey */
+      --text-on-accent : #FFFFFF;
+
+      /* Shadows — blue-tinted */
+      --shadow-card    : 0 4px 24px rgba(78,127,212,.13);
+      --shadow-upload  : 0 2px 16px rgba(78,127,212,.10);
+      --shadow-thumb   : 0 2px 8px  rgba(0,0,0,.08);
+      --shadow-glow    : 0 0 0 3px #4E7FD4, 0 0 0 6px rgba(78,127,212,.28);
+
+      /* Radii — unchanged */
+      --radius-card    : 20px;
+      --radius-pill    : 999px;
+      --radius-thumb   : 12px;
+      --radius-upload  : 18px;
+
+      /* Transitions — unchanged */
+      --ease-out       : cubic-bezier(.22,.68,0,1.2);
+      --ease-std       : cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ─── RESET & BASE ─────────────────────────────────────────── */
+    /* T7.3 — Remove blue flash on tap globally (iOS Safari) */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+      background : var(--bg-page);
+      color      : var(--text-dark);
+      min-height : 100vh;       /* T7.1: fallback for browsers that don’t support svh */
+      min-height : 100svh;      /* T7.1: correct value — excludes iOS address bar */
+      -webkit-overflow-scrolling: touch; /* T7.8 */
+      /* TX.5 — blue-tinted dot grid (matches new palette) */
+      background-image: radial-gradient(circle, rgba(78,127,212,.07) 1px, transparent 1px);
+      background-size : 24px 24px;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ─── LAYOUT WRAPPER ───────────────────────────────────────── */
+    .app-wrapper {
+      max-width  : 480px;
+      margin     : 0 auto;
+      padding    : 1.5rem 1.125rem 4rem;
+    }
+
+    /* ─── SECTION HEADINGS ─────────────────────────────────────── */
+    .section-heading {
+      font-size   : 1rem;
+      font-weight : 700;
+      color       : var(--text-mid);
+      margin-bottom: .75rem;
+      letter-spacing: .02em;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       STATE SCREENS  (before / locked / after)
+       ═══════════════════════════════════════════════════════════ */
+    #state-before,
+    #state-locked,
+    #state-after {
+      display        : flex;
+      flex-direction : column;
+      align-items    : center;
+      text-align     : center;
+      padding        : 3rem 1rem 2rem;
+      animation      : fadeSlideUp .5s var(--ease-out) both;
+    }
+
+    .state-icon {
+      font-size     : 4rem;
+      margin-bottom : 1.25rem;
+      animation     : floatIcon 3s ease-in-out infinite;
+    }
+
+    .state-title {
+      font-size   : 2rem;
+      font-weight : 800;
+      color       : var(--text-dark);
+      line-height : 1.2;
+      margin-bottom: .5rem;
+    }
+
+    .state-subtitle {
+      font-size     : 1rem;
+      color         : var(--text-mid);
+      line-height   : 1.6;
+      max-width     : 300px;
+      margin-bottom : 2rem;
+    }
+
+    .state-subtitle strong { color: var(--accent-primary); }
+
+    /* Countdown pill */
+    .countdown-pill {
+      display        : inline-flex;
+      flex-direction : column;
+      align-items    : center;
+      background     : var(--bg-card);
+      border         : 2px solid var(--accent-light);
+      border-radius  : var(--radius-card);
+      padding        : 1rem 2rem;
+      box-shadow     : var(--shadow-card);
+      gap            : .2rem;
+    }
+
+    .countdown-pill #days-until-number,
+    .countdown-pill #unlock-countdown {
+      font-size   : 2.5rem;
+      font-weight : 800;
+      color       : var(--accent-primary);
+      line-height : 1;
+    }
+
+    .countdown-label {
+      font-size   : .8rem;
+      font-weight : 600;
+      color       : var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       HERO — Day counter + progress bar
+       ═══════════════════════════════════════════════════════════ */
+    .hero {
+      text-align    : center;
+      padding       : 2rem 0 1.5rem;
+      animation     : fadeSlideUp .45s var(--ease-out) both;
+    }
+
+    .hero-eyebrow {
+      font-size     : .8rem;
+      font-weight   : 700;
+      color         : var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom : .6rem;
+    }
+
+    .hero-day-counter {
+      font-size   : 3.5rem;
+      font-weight : 800;
+      color       : var(--text-dark);
+      line-height : 1.05;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-day-of {
+      font-size   : 1.5rem;
+      font-weight : 600;
+      color       : var(--text-soft);
+    }
+
+    /* Progress bar track */
+    .progress-bar-track {
+      background    : var(--accent-light);
+      border-radius : var(--radius-pill);
+      height        : 12px;
+      overflow      : hidden;
+      position      : relative;
+      margin-bottom : .5rem;
+    }
+
+    /* Progress bar fill — animated on load */
+    .progress-bar-fill {
+      height        : 100%;
+      background    : var(--grad-bar);
+      border-radius : var(--radius-pill);
+      width         : 0%;               /* set by JS */
+      transition    : width 1s var(--ease-out);
+      position      : relative;
+    }
+
+    /* Shimmer animation on the bar fill */
+    .progress-bar-fill::after {
+      content    : '';
+      position   : absolute;
+      top        : 0; left: -60%;
+      width      : 60%; height: 100%;
+      background : linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+      animation  : shimmer 2.5s linear infinite;
+    }
+
+    .progress-label {
+      font-size  : .8rem;
+      color      : var(--text-soft);
+      font-weight: 600;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       MESSAGE CARD
+       ═══════════════════════════════════════════════════════════ */
+    .message-card {
+      background    : var(--bg-card);
+      border-radius : var(--radius-card);
+      box-shadow    : var(--shadow-card);
+      padding       : 1.75rem 1.5rem 1.5rem;
+      margin-bottom : 1.5rem;
+      position      : relative;
+      overflow      : hidden;
+      animation     : fadeSlideUp .5s var(--ease-out) .1s both;
+    }
+
+    /* Decorative top-left blob */
+    .message-card::before {
+      content       : '';
+      position      : absolute;
+      top           : -30px; left: -30px;
+      width         : 100px; height: 100px;
+      background    : var(--accent-pale);
+      border-radius : 50%;
+      pointer-events: none;
+    }
+
+    .message-day-badge {
+      display       : inline-block;
+      background    : var(--accent-pale);
+      color         : var(--accent-primary);
+      font-size     : .75rem;
+      font-weight   : 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      padding       : .25rem .75rem;
+      border-radius : var(--radius-pill);
+      margin-bottom : 1rem;
+      position      : relative; /* above ::before blob */
+    }
+
+    .message-text {
+      font-size     : 1.15rem;
+      font-weight   : 600;
+      color         : var(--text-dark);
+      line-height   : 1.65;
+      position      : relative;
+    }
+
+    .message-footer {
+      text-align    : right;
+      margin-top    : 1.25rem;
+    }
+
+    .message-heart {
+      font-size : 1.5rem;
+      animation : heartbeat 2s ease-in-out infinite;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       UPLOAD SECTION & ZONE
+       ═══════════════════════════════════════════════════════════ */
+    .upload-section {
+      margin-bottom : 1.75rem;
+      animation     : fadeSlideUp .5s var(--ease-out) .2s both;
+    }
+
+    .upload-zone {
+      background    : var(--bg-upload);
+      border        : 2.5px dashed var(--accent-mid);
+      border-radius : var(--radius-upload);
+      aspect-ratio  : 1 / 1;
+      max-width     : 100%;
+      display       : flex;
+      align-items   : center;
+      justify-content: center;
+      cursor        : pointer;
+      position      : relative;
+      overflow      : hidden;
+      transition    : border-color .2s var(--ease-std),
+                      background   .2s var(--ease-std),
+                      transform    .15s var(--ease-std);
+      box-shadow    : var(--shadow-upload);
+      touch-action  : manipulation; /* T7.2 — removes 300ms tap delay on iOS */
+    }
+
+    .upload-zone:hover,
+    .upload-zone:focus-visible {
+      border-color  : var(--accent-primary);
+      background    : var(--accent-pale);
+      transform     : scale(1.01);
+      outline       : none;
+    }
+
+    /* Drag-over state (class added by JS) */
+    .upload-zone.drag-over {
+      border-color  : var(--accent-primary);
+      background    : var(--accent-light);
+      transform     : scale(1.03);
+    }
+
+    /* Empty state inner */
+    .upload-zone-empty {
+      display        : flex;
+      flex-direction : column;
+      align-items    : center;
+      gap            : .6rem;
+      pointer-events : none;
+    }
+
+    .upload-icon {
+      font-size     : 3rem;
+      animation     : floatIcon 4s ease-in-out infinite;
+    }
+
+    .upload-prompt {
+      font-size   : 1rem;
+      font-weight : 700;
+      color       : var(--text-mid);
+      text-align  : center;
+    }
+
+    .upload-prompt strong { color: var(--accent-primary); }
+
+    .upload-hint {
+      font-size   : .8rem;
+      color       : var(--text-soft);
+      font-weight : 600;
+    }
+
+    /* T7.4 — Show context-appropriate hint based on input device.
+       Coarse pointer (touch / iPhone) → hide the "drag" variant.
+       Fine pointer (mouse / trackpad)  → hide the "tap-only" variant. */
+    @media (pointer: coarse) { .hint-mouse { display: none; } }
+    @media (pointer: fine)   { .hint-touch { display: none; } }
+
+    /* Preview state */
+    .upload-zone-preview {
+      width   : 100%;
+      height  : 100%;
+      position: relative;
+    }
+
+    .upload-preview-img {
+      width      : 100%;
+      height     : 100%;
+      object-fit : cover;
+      display    : block;
+      border-radius: calc(var(--radius-upload) - 4px);
+    }
+
+    .upload-change-btn {
+      background    : rgba(255,255,255,.88);
+      border        : none;
+      border-radius : var(--radius-pill);
+      padding       : .4rem .9rem;
+      font-family   : inherit;
+      font-size     : .8rem;
+      font-weight   : 700;
+      color         : var(--accent-primary);
+      cursor        : pointer;
+      backdrop-filter: blur(6px);
+      box-shadow    : 0 2px 8px rgba(0,0,0,.12);
+      transition    : transform .15s var(--ease-std),
+                      box-shadow .15s var(--ease-std);
+    }
+
+    .upload-view-btn {
+      background    : rgba(255,255,255,.88);
+      border        : none;
+      border-radius : var(--radius-pill);
+      padding       : .4rem .9rem;
+      font-family   : inherit;
+      font-size     : .8rem;
+      font-weight   : 700;
+      color         : var(--accent-mid);
+      cursor        : pointer;
+      backdrop-filter: blur(6px);
+      box-shadow    : 0 2px 8px rgba(0,0,0,.12);
+      transition    : transform .15s var(--ease-std),
+                      box-shadow .15s var(--ease-std);
+    }
+
+    .upload-change-btn:hover,
+    .upload-view-btn:hover,
+    .upload-delete-btn:hover {
+      transform  : scale(1.05);
+      box-shadow : 0 4px 14px rgba(0,0,0,.18);
+    }
+
+    /* T7.5 — Ensure overlay buttons meet 44px minimum tap target */
+    .upload-change-btn,
+    .upload-view-btn,
+    .upload-delete-btn {
+      min-height   : 2.75rem;  /* ≥44px */
+      touch-action : manipulation;
+    }
+
+    /* Delete button — distinct red/danger colour */
+    .upload-delete-btn {
+      background    : rgba(255,255,255,.88);
+      border        : none;
+      border-radius : var(--radius-pill);
+      padding       : .4rem .9rem;
+      font-family   : inherit;
+      font-size     : .8rem;
+      font-weight   : 700;
+      color         : #d94f4f;
+      cursor        : pointer;
+      backdrop-filter: blur(6px);
+      box-shadow    : 0 2px 8px rgba(0,0,0,.12);
+      transition    : transform .15s var(--ease-std),
+                      box-shadow .15s var(--ease-std),
+                      background .15s;
+    }
+    .upload-delete-btn:hover {
+      background : rgba(255,235,235,.95);
+      color      : #b93030;
+    }
+
+    /* Row of overlay buttons on the preview */
+    .upload-preview-actions {
+      position        : absolute;
+      bottom          : .75rem;
+      right           : .75rem;
+      display         : flex;
+      gap             : .4rem;
+    }
+
+    /* Drag-over overlay */
+    .upload-dragover-overlay {
+      position        : absolute;
+      inset           : 0;
+      background      : rgba(78,127,212,.12); /* TX.2 — blue drag overlay */
+      border-radius   : calc(var(--radius-upload) - 4px);
+      display         : flex;
+      align-items     : center;
+      justify-content : center;
+      font-size       : 1.4rem;
+      font-weight     : 800;
+      color           : var(--accent-primary);
+      backdrop-filter : blur(2px);
+      pointer-events  : none;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       DAY LOCKED CARD
+       Shown when the user browses a future day.
+       ═══════════════════════════════════════════════════════════ */
+    .day-locked-card {
+      background    : var(--bg-card);
+      border-radius : var(--radius-card);
+      box-shadow    : var(--shadow-card);
+      padding       : 2.5rem 1.5rem 2rem;
+      margin-bottom : 1.5rem;
+      text-align    : center;
+      border        : 2px dashed var(--accent-light);
+      animation     : fadeSlideUp .4s var(--ease-out) both;
+    }
+
+    .day-locked-icon {
+      font-size     : 2.8rem;
+      margin-bottom : .75rem;
+      display       : block;
+    }
+
+    .day-locked-title {
+      font-size   : 1.15rem;
+      font-weight : 800;
+      color       : var(--text-dark);
+      margin      : 0 0 .35rem;
+    }
+
+    .day-locked-date {
+      font-size   : .9rem;
+      color       : var(--text-mid);
+      margin      : 0 0 1.25rem;
+    }
+
+    .day-locked-countdown-wrap {
+      display         : inline-flex;
+      align-items     : center;
+      gap             : .4rem;
+      background      : var(--accent-pale);
+      border-radius   : var(--radius-pill);
+      padding         : .45rem 1.25rem;
+      margin-bottom   : 1.25rem;
+    }
+
+    .day-locked-countdown {
+      font-size   : 1.05rem;
+      font-weight : 800;
+      color       : var(--accent-primary);
+    }
+
+    .day-locked-countdown-label {
+      font-size   : .8rem;
+      font-weight : 600;
+      color       : var(--accent-mid);
+    }
+
+    .day-locked-hint {
+      font-size  : .85rem;
+      color      : var(--text-light);
+      margin     : 0;
+    }
+
+
+    /* ═══════════════════════════════════════════════════════════
+       PHOTO SOURCE BOTTOM SHEET
+       ═══════════════════════════════════════════════════════════ */
+
+    /* Dimmed backdrop */
+    .photo-sheet-backdrop {
+      position   : fixed;
+      inset      : 0;
+      background : rgba(0,0,0,.48);
+      z-index    : 900;
+      opacity    : 0;
+      transition : opacity .25s ease;
+    }
+    .photo-sheet-backdrop.visible { opacity: 1; }
+
+    /* The sliding sheet */
+    .photo-sheet {
+      position      : fixed;
+      bottom        : 0;
+      left          : 0;
+      right         : 0;
+      max-width     : 540px;
+      margin        : 0 auto;
+      background    : var(--bg-card);
+      border-radius : 22px 22px 0 0;
+      padding       : 0 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+      z-index       : 901;
+      box-shadow    : 0 -8px 40px rgba(0,0,0,.16);
+      transform     : translateY(102%);
+      transition    : transform .32s cubic-bezier(.34,1.56,.64,1);
+    }
+    .photo-sheet.visible { transform: translateY(0); }
+
+    /* Drag handle */
+    .photo-sheet-handle {
+      width         : 38px;
+      height        : 4px;
+      background    : var(--accent-light);
+      border-radius : 2px;
+      margin        : .8rem auto 1.1rem;
+    }
+
+    /* "Add a Photo" label */
+    .photo-sheet-title {
+      text-align     : center;
+      font-size      : .78rem;
+      font-weight    : 700;
+      letter-spacing : .08em;
+      text-transform : uppercase;
+      color          : var(--text-light);
+      margin         : 0 0 1.1rem;
+    }
+
+    /* Row of three source buttons */
+    .photo-sheet-options {
+      display               : grid;
+      grid-template-columns : repeat(3, 1fr);
+      gap                   : .75rem;
+      margin-bottom         : .9rem;
+    }
+
+    .photo-source-btn {
+      display             : flex;
+      flex-direction      : column;
+      align-items         : center;
+      gap                 : .45rem;
+      background          : var(--bg-page);
+      border              : 1.5px solid var(--accent-pale);
+      border-radius       : var(--radius-card);
+      padding             : 1.1rem .5rem;
+      cursor              : pointer;
+      font-family         : inherit;
+      transition          : background .15s, transform .12s;
+      touch-action        : manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .photo-source-btn:hover,
+    .photo-source-btn:active {
+      background : var(--accent-pale);
+      transform  : scale(1.04);
+    }
+
+    .photo-source-icon  { font-size: 1.9rem; line-height: 1; }
+
+    .photo-source-label {
+      font-size   : .8rem;
+      font-weight : 700;
+      color       : var(--text-dark);
+    }
+
+    /* Cancel button */
+    .photo-sheet-cancel {
+      display      : block;
+      width        : 100%;
+      padding      : .9rem;
+      background   : var(--bg-page);
+      border       : none;
+      border-radius: var(--radius-card);
+      font-family  : inherit;
+      font-size    : .95rem;
+      font-weight  : 600;
+      color        : var(--accent-primary);
+      cursor       : pointer;
+      touch-action : manipulation;
+      -webkit-tap-highlight-color: transparent;
+      transition   : background .15s;
+    }
+    .photo-sheet-cancel:hover { background: var(--accent-pale); }
+
+
+    /* ═══════════════════════════════════════════════════════════
+       THUMBNAIL STRIP
+       ═══════════════════════════════════════════════════════════ */
+    .strip-section {
+      margin-bottom : 1.5rem;
+      animation     : fadeSlideUp .5s var(--ease-out) .3s both;
+    }
+
+    .thumbnail-strip {
+      display              : grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap                  : .6rem;
+    }
+
+    .thumb-slot {
+      aspect-ratio  : 1 / 1;
+      border-radius : var(--radius-thumb);
+      background    : var(--bg-card);
+      border        : 2px solid var(--accent-light);
+      overflow      : hidden;
+      display       : flex;
+      flex-direction : column;
+      align-items   : center;
+      justify-content: center;
+      cursor        : default;
+      position      : relative;
+      box-shadow    : var(--shadow-thumb);
+      transition    : transform .15s var(--ease-std),
+                      box-shadow .15s var(--ease-std),
+                      border-color .2s;
+      /* T7.2/T7.5 — remove tap delay; each cell is ≥44px via the grid */
+      touch-action  : manipulation;
+    }
+
+    /* T7.5 — Enforce minimum 44×44px tap target on thumbnails */
+    .thumb-slot { min-width: 44px; min-height: 44px; }
+
+    /* Slots with a photo are clickable */
+    .thumb-slot.thumb-has-photo {
+      cursor : pointer;
+    }
+
+    .thumb-slot.thumb-has-photo:hover {
+      transform  : scale(1.06);
+      box-shadow : 0 6px 18px rgba(0,0,0,.14);
+    }
+
+    /* Current calendar day — coral pulsing glow */
+    .thumb-slot.thumb-current {
+      border-color : var(--accent-primary);
+      box-shadow   : var(--shadow-glow);
+      animation    : pulseGlow 2.5s ease-in-out infinite;
+    }
+
+    /* T6.6 — Selected (browsed) day — softer inner ring */
+    .thumb-slot.thumb-selected {
+      outline        : 2.5px solid var(--accent-mid);
+      outline-offset : 2px;
+    }
+
+    /* When today IS the selected day — combine both effects */
+    .thumb-slot.thumb-current.thumb-selected {
+      outline        : 2.5px solid var(--accent-mid);
+      outline-offset : 3px;
+    }
+
+    /* T6.7 — Hero day navigation arrows */
+    .hero-nav {
+      display         : flex;
+      align-items     : center;
+      justify-content : center;
+      gap             : 1rem;
+      margin-bottom   : .15rem;
+    }
+
+    /* T7.5 — Hero nav arrows: enforce ≥44×44px tap target */
+    .hero-nav-btn {
+      background      : rgba(255,255,255,.65);
+      border          : 1.5px solid var(--accent-light);
+      border-radius   : 50%;
+      width           : 2.75rem;  /* 44px — Apple HIG minimum */
+      height          : 2.75rem;
+      font-size       : .9rem;
+      color           : var(--accent-primary);
+      cursor          : pointer;
+      display         : flex;
+      align-items     : center;
+      justify-content : center;
+      flex-shrink     : 0;
+      transition      : background .15s, transform .12s, opacity .15s;
+      touch-action    : manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .hero-nav-btn:hover:not(:disabled) {
+      background : var(--accent-pale);
+      transform  : scale(1.12);
+    }
+
+    .hero-nav-btn:disabled {
+      opacity : 0.28;
+      cursor  : default;
+    }
+
+    .thumb-img {
+      width      : 100%;
+      height     : 100%;
+      object-fit : cover;
+      display    : block;
+    }
+
+    .thumb-placeholder {
+      font-size   : 1.1rem;
+      font-weight : 800;
+      color       : var(--accent-light);
+    }
+
+    .thumb-day-label {
+      position   : absolute;
+      bottom     : 3px;
+      font-size  : .55rem;
+      font-weight: 700;
+      color      : var(--text-soft);
+      background : rgba(255,255,255,.75);
+      padding    : 1px 4px;
+      border-radius: 4px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       LIGHTBOX
+       ═══════════════════════════════════════════════════════════ */
+    .lightbox {
+      position   : fixed;
+      inset      : 0;
+      z-index    : 1000;
+      display    : flex;
+      align-items: center;
+      justify-content: center;
+      animation  : fadeIn .25s var(--ease-std) both;
+    }
+
+    .lightbox-backdrop {
+      position   : absolute;
+      inset      : 0;
+      background : rgba(30,15,10,.72);
+      backdrop-filter: blur(6px);
+    }
+
+    .lightbox-content {
+      position      : relative;
+      z-index       : 1;
+      max-width     : min(92vw, 560px);
+      max-height    : 88vh;
+      display       : flex;
+      flex-direction: column;
+      align-items   : center;
+      gap           : .75rem;
+      animation     : scaleIn .3s var(--ease-out) both;
+    }
+
+    .lightbox-close {
+      position      : absolute;
+      top           : -2.5rem;
+      right         : 0;
+      background    : rgba(255,255,255,.15);
+      border        : none;
+      color         : #fff;
+      font-size     : 1.2rem;
+      width         : 2.25rem;
+      height        : 2.25rem;
+      border-radius : 50%;
+      cursor        : pointer;
+      display       : flex;
+      align-items   : center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+      transition    : background .15s;
+    }
+
+    .lightbox-close:hover { background: rgba(255,255,255,.3); }
+
+    .lightbox-day-label {
+      color       : rgba(255,255,255,.75);
+      font-size   : .85rem;
+      font-weight : 700;
+      text-align  : center;
+      letter-spacing: .04em;
+    }
+
+    .lightbox-img {
+      max-width    : 100%;
+      max-height   : 76vh;
+      border-radius: 16px;
+      object-fit   : contain;
+      box-shadow   : 0 24px 64px rgba(0,0,0,.4);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       FOOTER & RESET BUTTON
+       ═══════════════════════════════════════════════════════════ */
+    .page-footer {
+      text-align : center;
+      padding-top: 1rem;
+    }
+
+    .reset-btn {
+      background     : transparent;
+      border         : none;
+      font-family    : inherit;
+      font-size      : .75rem;
+      color          : var(--text-soft);
+      cursor         : pointer;
+      padding        : .3rem .5rem;
+      border-radius  : 6px;
+      transition     : color .2s, background .2s;
+    }
+
+    .reset-btn:hover {
+      color      : #c0392b;
+      background : rgba(192,57,43,.08);
+    }
+
+    .reset-note {
+      display    : block;
+      font-size  : .7rem;
+      opacity    : .7;
+      margin-top : .1rem;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       ANIMATIONS
+       ═══════════════════════════════════════════════════════════ */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(.88); }
+      to   { opacity: 1; transform: scale(1);   }
+    }
+
+    @keyframes floatIcon {
+      0%, 100% { transform: translateY(0);    }
+      50%       { transform: translateY(-8px); }
+    }
+
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1);    }
+      30%       { transform: scale(1.18); }
+      60%       { transform: scale(1);    }
+      80%       { transform: scale(1.08); }
+    }
+
+    @keyframes shimmer {
+      to { left: 160%; }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: var(--shadow-glow); }
+      50%       { box-shadow: 0 0 0 3px #4E7FD4, 0 0 0 8px rgba(78,127,212,.22); } /* TX.2 */
+    }
+
+    /* ─── RESPONSIVE TWEAKS ────────────────────────────────────── */
+    @media (max-width: 380px) {
+      .hero-day-counter  { font-size: 2.75rem; }
+      .thumbnail-strip   { grid-template-columns: repeat(5, 1fr); gap: .4rem; }
+      .thumb-day-label   { display: none; }
+    }
+
+    @media (min-width: 480px) {
+      .app-wrapper { padding-top: 2.5rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       ROOT WRAPPER — All content lives inside this centred container
+       ═══════════════════════════════════════════════════════════════ -->
+  <main class="app-wrapper" id="app">
+
+
+    <!-- ╔══════════════════════════════════════════════════════════╗
+         ║  STATE: BEFORE TRIP  (shown when today < departure)     ║
+         ╚══════════════════════════════════════════════════════════╝ -->
+    <section id="state-before" class="hidden" aria-label="Trip hasn't started yet">
+
+      <!-- Decorative top icon -->
+      <div class="state-icon" aria-hidden="true">✈️</div>
+
+      <h1 class="state-title">Trip starts soon!</h1>
+      <p class="state-subtitle">
+        Your adventure begins on
+        <strong id="departure-date-label">May 21</strong>.
+        This journal will come alive on that day. 🌸
+      </p>
+
+      <!-- Countdown to departure -->
+      <div class="countdown-pill" id="days-until-departure">
+        <span id="days-until-number">—</span>
+        <span class="countdown-label">days to go</span>
+      </div>
+
+    </section><!-- /#state-before -->
+
+
+    <!-- ╔══════════════════════════════════════════════════════════╗
+         ║  STATE: LOCKED  (trip day, but before 12pm on Day 1)    ║
+         ╚══════════════════════════════════════════════════════════╝ -->
+    <section id="state-locked" class="hidden" aria-label="Message locked until noon">
+
+      <div class="state-icon" aria-hidden="true">🔒</div>
+
+      <h1 class="state-title">Almost time!</h1>
+      <p class="state-subtitle">
+        Day 1's message unlocks at <strong>12:00 PM</strong>.
+        Check back soon! ☀️
+      </p>
+
+      <!-- Countdown to noon -->
+      <div class="countdown-pill">
+        <span id="unlock-countdown">—</span>
+        <span class="countdown-label">until unlock</span>
+      </div>
+
+    </section><!-- /#state-locked -->
+
+
+    <!-- ╔══════════════════════════════════════════════════════════╗
+         ║  STATE: AFTER TRIP  (shown when today > return date)    ║
+         ╚══════════════════════════════════════════════════════════╝ -->
+    <section id="state-after" class="hidden" aria-label="Trip is over">
+
+      <div class="state-icon" aria-hidden="true">🏡</div>
+
+      <h1 class="state-title">Welcome home! 💛</h1>
+      <p class="state-subtitle">
+        The trip is over, but the memories live here forever.
+        Scroll through your photo strip below.
+      </p>
+
+      <!-- Still show the thumbnail strip in "after" state -->
+      <!-- (thumbnail strip element is shared, rendered below) -->
+
+    </section><!-- /#state-after -->
+
+
+    <!-- ╔══════════════════════════════════════════════════════════╗
+         ║  STATE: ACTIVE TRIP  (Day 1–10, message unlocked)       ║
+         ╚══════════════════════════════════════════════════════════╝ -->
+    <section id="state-active" class="hidden" aria-label="Active trip day">
+
+      <!-- ── HERO: Day counter + progress bar ─────────────────── -->
+      <header class="hero" aria-label="Trip progress">
+
+        <!-- Small "Your trip journal" label -->
+        <p class="hero-eyebrow">✈️ Your Trip Journal</p>
+
+        <!-- Day navigation: ◀ Day 5 ▶ -->
+        <div class="hero-nav">
+          <button class="hero-nav-btn" id="hero-prev"
+                  aria-label="Previous day" disabled>◀</button>
+          <h1 class="hero-day-counter">
+            Day <span id="hero-day-number">1</span>
+            <span class="hero-day-of">of&nbsp;10</span>
+          </h1>
+          <button class="hero-nav-btn" id="hero-next"
+                  aria-label="Next day">▶</button>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-bar-track" role="progressbar"
+             aria-valuenow="1" aria-valuemin="1" aria-valuemax="10"
+             aria-label="Trip progress">
+          <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        </div>
+        <!-- Progress label e.g. "3 days in · 7 to go" -->
+        <p class="progress-label" id="progress-label">Day 1 of 10</p>
+
+      </header><!-- /.hero -->
+
+
+      <!-- ── DAY LOCKED CARD ─────────────────────────────────────
+           Shown when the user browses a future day that hasn't
+           unlocked yet. Hidden by JS when an unlocked day is viewed.
+           ─────────────────────────────────────────────────────── -->
+      <div class="day-locked-card hidden" id="day-locked-card"
+           aria-label="Day not yet unlocked">
+
+        <div class="day-locked-icon" aria-hidden="true">🔒</div>
+
+        <p class="day-locked-title">
+          Day <span id="locked-day-number">1</span> isn't here yet
+        </p>
+        <p class="day-locked-date" id="locked-unlock-date">
+          Unlocks on…
+        </p>
+        <div class="day-locked-countdown-wrap">
+          <span class="day-locked-countdown" id="locked-countdown">soon</span>
+          <span class="day-locked-countdown-label">to go</span>
+        </div>
+
+        <p class="day-locked-hint">
+          Come back then for your message 💌
+        </p>
+
+      </div><!-- /#day-locked-card -->
+
+
+      <!-- ── UNLOCKED DAY CONTENT ───────────────────────────────
+           Shown when the selected day is unlocked.
+           Contains the message card + photo upload zone.
+           ─────────────────────────────────────────────────────── -->
+      <div id="unlocked-day-content">
+
+        <!-- ── MESSAGE CARD: Today's love note ─────────────────── -->
+        <article class="message-card" aria-label="Today's message">
+
+          <!-- Day badge -->
+          <div class="message-day-badge">Day <span id="message-day-badge-num">1</span></div>
+
+          <!-- The actual message text — filled by JS -->
+          <p class="message-text" id="message-text">Loading message…</p>
+
+          <!-- Decorative footer inside card -->
+          <div class="message-footer">
+            <span class="message-heart" aria-hidden="true">💌</span>
+          </div>
+
+        </article><!-- /.message-card -->
+
+
+        <!-- ── PHOTO UPLOAD ZONE ──────────────────────────────────
+             Drag-and-drop OR click to select.
+             Shows uploaded photo as background once a photo is chosen.
+             ─────────────────────────────────────────────────────── -->
+        <section class="upload-section" aria-label="Upload today's photo">
+
+          <h2 class="section-heading">Today's Photo 📷</h2>
+
+          <!-- The drop zone itself -->
+          <div class="upload-zone" id="upload-zone"
+               role="button" tabindex="0"
+               aria-label="Drop a photo here or click to select">
+
+            <!-- Shown when NO photo uploaded yet -->
+            <div class="upload-zone-empty" id="upload-zone-empty">
+              <div class="upload-icon" aria-hidden="true">🖼️</div>
+              <p class="upload-prompt">
+                Drop photo for <strong>Day <span class="upload-day-label">1</span></strong>
+              </p>
+              <p class="upload-hint">
+                <span class="hint-touch">Tap to add a photo</span>
+                <span class="hint-mouse">Tap or drag an image here</span>
+              </p>
+            </div>
+
+            <!-- Shown when a photo IS uploaded -->
+            <div class="upload-zone-preview hidden" id="upload-zone-preview">
+              <img class="upload-preview-img" id="upload-preview-img"
+                   src="" alt="Your photo for today" />
+              <!-- Overlay buttons -->
+              <div class="upload-preview-actions">
+                <button class="upload-change-btn" id="upload-change-btn"
+                        aria-label="Change photo">
+                  ✏️ Change
+                </button>
+                <button class="upload-view-btn" id="upload-view-btn"
+                        aria-label="View full size photo">
+                  🔍 View
+                </button>
+                <button class="upload-delete-btn" id="upload-delete-btn"
+                        aria-label="Delete this day's photo">
+                  🗑️ Delete
+                </button>
+              </div>
+            </div>
+
+            <!-- Drag-over visual overlay (shown during drag) -->
+            <div class="upload-dragover-overlay hidden" id="upload-dragover-overlay"
+                 aria-hidden="true">
+              <span>Drop it! 🎉</span>
+            </div>
+
+          </div><!-- /#upload-zone -->
+
+        </section><!-- /.upload-section -->
+
+      </div><!-- /#unlocked-day-content -->
+
+    </section><!-- /#state-active -->
+
+
+    <!-- ═══════════════════════════════════════════════════════════
+         THUMBNAIL STRIP — Visible in ALL states (active + after)
+         10 small squares, one per trip day.
+         Current day gets a glow border. Uploaded days show the photo.
+         ═══════════════════════════════════════════════════════════ -->
+    <section class="strip-section hidden" id="strip-section" aria-label="All trip photos">
+
+      <h2 class="section-heading">All Days 🗓️</h2>
+
+      <div class="thumbnail-strip" id="thumbnail-strip" role="list">
+        <!--
+          10 thumbnail slots generated by JS.
+          Each slot will look like:
+          <div class="thumb-slot [thumb-current] [thumb-has-photo]"
+               data-day="N" role="listitem" aria-label="Day N">
+            <img class="thumb-img hidden" src="" alt="Day N photo" />
+            <span class="thumb-placeholder" aria-hidden="true">N</span>
+            <span class="thumb-day-label">Day N</span>
+          </div>
+        -->
+      </div>
+
+    </section><!-- /.strip-section -->
+
+
+    <!-- ═══════════════════════════════════════════════════════════
+         RESET BUTTON — Discreet, at the very bottom
+         ═══════════════════════════════════════════════════════════ -->
+    <footer class="page-footer hidden" id="page-footer">
+      <button class="reset-btn" id="reset-btn"
+              aria-label="Reset all saved photos">
+        Reset all photos
+        <span class="reset-note">(only if trip is over)</span>
+      </button>
+    </footer>
+
+
+  </main><!-- /#app -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       LIGHTBOX / MODAL — Full-screen photo viewer
+       Toggled visible by JS when a thumbnail is clicked.
+       ═══════════════════════════════════════════════════════════════ -->
+  <div class="lightbox hidden" id="lightbox"
+       role="dialog" aria-modal="true" aria-label="Full size photo">
+
+    <!-- Semi-transparent backdrop — click to close -->
+    <div class="lightbox-backdrop" id="lightbox-backdrop"></div>
+
+    <div class="lightbox-content">
+
+      <!-- Close button -->
+      <button class="lightbox-close" id="lightbox-close"
+              aria-label="Close photo viewer">✕</button>
+
+      <!-- Day label inside lightbox -->
+      <p class="lightbox-day-label" id="lightbox-day-label">Day 1</p>
+
+      <!-- The full-size image -->
+      <img class="lightbox-img" id="lightbox-img" src="" alt="Full size trip photo" />
+
+    </div><!-- /.lightbox-content -->
+
+  </div><!-- /#lightbox -->
+
+
+  <!-- ─────────────────────────────────────────────────────────────────
+       PHASE 1 — CONFIG & DATA LAYER
+       ───────────────────────────────────────────────────────────────── -->
+  <script>
+    /* ===================================================================
+       PHASE 1 — CONFIG & DATA LAYER
+       ===================================================================
+
+       HOW TO EDIT THIS FILE LATER:
+       1. Change departure / return dates below (TRIP_CONFIG section).
+       2. Edit the messages in the DAILY_MESSAGES section.
+       That's it. Everything else is automatic.
+
+       =================================================================== */
+
+
+    /* -------------------------------------------------------------------
+       SECTION 1 of 4: TRIP CONFIGURATION
+       -------------------------------------------------------------------
+       DEPARTURE_DATE : The day she leaves (Day 1 of the trip).
+       RETURN_DATE    : The day she comes back (Day 10 of the trip).
+       UNLOCK_HOUR    : Messages only become visible after this hour (24h).
+                        12 = 12:00 PM noon.
+       ------------------------------------------------------------------- */
+    const TRIP_CONFIG = {
+      DEPARTURE_DATE : "2026-05-21",   // ← CHANGE THIS to update departure  (YYYY-MM-DD)
+      RETURN_DATE    : "2026-05-30",   // ← CHANGE THIS to update return date (YYYY-MM-DD)
+      UNLOCK_HOUR    : 12,             // ← CHANGE THIS if you want a different unlock time (0–23)
+      TOTAL_DAYS     : 10,
+
+      // ── TEST / DEBUG ────────────────────────────────────────────────
+      // Set DEBUG_OVERRIDE_DAY to a number (1–10) to force-show that trip
+      // day regardless of the real date — useful for previewing messages
+      // and testing the upload zone. Set back to null for live mode.
+      //
+      // Examples:
+      //   DEBUG_OVERRIDE_DAY: 1   → shows Day 1 (departure day)
+      //   DEBUG_OVERRIDE_DAY: 5   → shows Day 5
+      //   DEBUG_OVERRIDE_DAY: 10  → shows Day 10 (last day)
+      //   DEBUG_OVERRIDE_DAY: null → normal live behaviour
+      DEBUG_OVERRIDE_DAY: 10,          // ← SET null before giving to her; 10 = all days unlocked
+    };
+
+
+    /* -------------------------------------------------------------------
+       SECTION 2 of 4: DAILY MESSAGES
+       -------------------------------------------------------------------
+       One message per day. Index 0 = Day 1, index 9 = Day 10.
+       Keep each message a single string. Use \n for line breaks inside
+       the card if you want multi-line notes.
+       ------------------------------------------------------------------- */
+    const DAILY_MESSAGES = [
+      // Day 1 — Departure day (May 21)
+      "The 10 days start now, have a safe trip, enjoy and miss me ❤️😘",
+
+      // Day 2 (May 22)
+      "You are amazingggg, take a moment and imagine me hugging you 🤗",
+
+      // Day 3 (May 23)
+      "Miss your voice, send me a voice note when you can 🫠",
+
+      // Day 4 (May 24)
+      "Find something blue and think of me 💙🧿",
+
+      // Day 5 (May 25)
+      "Half way thereee, miss you so muchh 🥹😩",
+
+      // Day 6 (May 26)
+      "\"Mujhe tumse pyaar ho jayega, phir se...\" aur tume?",
+
+      // Day 7 (May 27)
+      "Pray for \"us\" at the golden temple 🙏🏻🧿",
+
+      // Day 8 (May 28)
+      "I hope you laughed today, send me a picture of you smiling 😁",
+
+      // Day 9 (May 29)
+      "Almost doneee, save a small souvenir for us 💋",
+
+      // Day 10 — Return day (May 30)
+      "Tomorrow you are back in my armsss ❤️🫂",
+    ];
+
+
+    /* -------------------------------------------------------------------
+       SECTION 3 of 4: DATE & DAY LOGIC
+       ------------------------------------------------------------------- */
+
+    function parseLocalDate(dateStr) {
+      const [year, month, day] = dateStr.split("-").map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    function calendarDayIndex(now, departure) {
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const depMidnight   = new Date(departure.getFullYear(), departure.getMonth(), departure.getDate());
+      return Math.floor((todayMidnight - depMidnight) / msPerDay) + 1;
+    }
+
+    /**
+     * Core function: returns the effective trip day accounting for unlock hour.
+     * @returns {{ status: "before"|"locked"|"active"|"after", day: number|null }}
+     */
+    function getTripDay() {
+      // ── TEST MODE: override with a fixed day number ──────────────────
+      // Change TRIP_CONFIG.DEBUG_OVERRIDE_DAY (above) to test any day.
+      if (TRIP_CONFIG.DEBUG_OVERRIDE_DAY !== null &&
+          TRIP_CONFIG.DEBUG_OVERRIDE_DAY !== undefined) {
+        const d = Math.min(Math.max(Number(TRIP_CONFIG.DEBUG_OVERRIDE_DAY), 1), TRIP_CONFIG.TOTAL_DAYS);
+        return { status: "active", day: d };
+      }
+
+      // ── LIVE MODE ────────────────────────────────────────────────────
+      const now       = new Date();
+      const departure = parseLocalDate(TRIP_CONFIG.DEPARTURE_DATE);
+      const returnDt  = parseLocalDate(TRIP_CONFIG.RETURN_DATE);
+      const totalDays = TRIP_CONFIG.TOTAL_DAYS;
+
+      // Return date end = midnight of the day AFTER return (trip is over then)
+      const returnEnd = new Date(returnDt.getFullYear(), returnDt.getMonth(), returnDt.getDate() + 1);
+
+      if (now < departure) return { status: "before", day: null };
+      if (now >= returnEnd) return { status: "after",  day: null };
+
+      const calDay     = calendarDayIndex(now, departure);
+      const clampedDay = Math.min(Math.max(calDay, 1), totalDays);
+      const isUnlocked = now.getHours() >= TRIP_CONFIG.UNLOCK_HOUR;
+
+      if (isUnlocked) {
+        // Past noon — show today's message
+        return { status: "active", day: clampedDay };
+      } else {
+        // Before noon — show previous day's message (or locked if Day 1)
+        if (clampedDay === 1) return { status: "locked", day: null };
+        return { status: "active", day: clampedDay - 1 };
+      }
+    }
+
+    function getTimeUntilUnlock() {
+      const now = new Date();
+      const unlockToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), TRIP_CONFIG.UNLOCK_HOUR, 0, 0);
+      const diffMs = unlockToday - now;
+      if (diffMs <= 0) return null;
+      const totalMins = Math.ceil(diffMs / 60000);
+      const hrs  = Math.floor(totalMins / 60);
+      const mins = totalMins % 60;
+      return hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+    }
+
+    function getDaysUntilDeparture() {
+      const now = new Date();
+      const dep = parseLocalDate(TRIP_CONFIG.DEPARTURE_DATE);
+      const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const depMidnight   = new Date(dep.getFullYear(), dep.getMonth(), dep.getDate());
+      return Math.ceil((depMidnight - todayMidnight) / (24 * 60 * 60 * 1000));
+    }
+
+    /* -------------------------------------------------------------------
+       T6.2 — isUnlockedForDay(day)
+       Returns true if the given trip day is available to view.
+
+       Uses getTripDay() (not raw Date comparison) so it works correctly
+       in both live mode AND when DEBUG_OVERRIDE_DAY is set:
+         • "after"  → all 10 days are unlocked
+         • "active" → days 1..tripState.day are unlocked; rest are locked
+         • "before" / "locked" → nothing unlocked yet
+       ------------------------------------------------------------------- */
+    function isUnlockedForDay(day) {
+      const tripState = getTripDay();
+      if (tripState.status === "after")  return true;
+      if (tripState.status === "active") return day <= tripState.day;
+      return false; // before / locked
+    }
+
+    /* -------------------------------------------------------------------
+       T6.3 — getUnlockDateForDay(day)
+       Returns the exact Date object for when day N unlocks:
+         departure date + (day - 1) calendar days, at UNLOCK_HOUR:00:00
+       Example: departure = May 21, UNLOCK_HOUR = 12
+         Day 1 unlocks: May 21 12:00 PM
+         Day 3 unlocks: May 23 12:00 PM
+       ------------------------------------------------------------------- */
+    function getUnlockDateForDay(day) {
+      const dep = parseLocalDate(TRIP_CONFIG.DEPARTURE_DATE);
+      return new Date(
+        dep.getFullYear(),
+        dep.getMonth(),
+        dep.getDate() + (day - 1),  // shift forward by (day-1) calendar days
+        TRIP_CONFIG.UNLOCK_HOUR,
+        0, 0, 0
+      );
+    }
+
+    /* -------------------------------------------------------------------
+       T6.3b — getTimeUntilDayUnlock(day)
+       Returns a human-readable string like "2d 3h 15m" until day N
+       unlocks, or null if already unlocked.
+       ------------------------------------------------------------------- */
+    function getTimeUntilDayUnlock(day) {
+      const diffMs = getUnlockDateForDay(day) - new Date();
+      if (diffMs <= 0) return null;
+
+      const totalMins = Math.ceil(diffMs / 60000);
+      const days = Math.floor(totalMins / (60 * 24));
+      const hrs  = Math.floor((totalMins % (60 * 24)) / 60);
+      const mins = totalMins % 60;
+
+      if (days > 0) return `${days}d ${hrs}h`;
+      if (hrs  > 0) return `${hrs}h ${mins}m`;
+      return `${mins}m`;
+    }
+
+    /* -------------------------------------------------------------------
+       SECTION 4 of 4: LOCALSTORAGE HELPERS
+       ------------------------------------------------------------------- */
+
+    const LS_PREFIX = "trip_photo_";
+
+    function savePhoto(day, dataURL) {
+      try {
+        localStorage.setItem(`${LS_PREFIX}day_${day}`, dataURL);
+        localStorage.setItem(`${LS_PREFIX}date_${day}`, new Date().toISOString());
+        return true;
+      } catch (e) {
+        console.error("Could not save photo to localStorage:", e);
+        return false;
+      }
+    }
+
+    function loadPhoto(day) {
+      return localStorage.getItem(`${LS_PREFIX}day_${day}`) || null;
+    }
+
+    function loadAllPhotos() {
+      const results = [];
+      for (let d = 1; d <= TRIP_CONFIG.TOTAL_DAYS; d++) {
+        results.push({
+          dataURL  : localStorage.getItem(`${LS_PREFIX}day_${d}`) || null,
+          savedAt  : localStorage.getItem(`${LS_PREFIX}date_${d}`) || null,
+        });
+      }
+      return results;
+    }
+
+    function deletePhoto(day) {
+      localStorage.removeItem(`${LS_PREFIX}day_${day}`);
+      localStorage.removeItem(`${LS_PREFIX}date_${day}`);
+    }
+
+    function deleteAllPhotos() {
+      for (let d = 1; d <= TRIP_CONFIG.TOTAL_DAYS; d++) {
+        deletePhoto(d);
+      }
+    }
+  </script>
+
+
+  <!-- ─────────────────────────────────────────────────────────────────
+       PHASE 2 — HTML WIRING (state reveal + thumbnail generation)
+       Full interactivity (upload, lightbox) added in Phase 4.
+       ───────────────────────────────────────────────────────────────── -->
+  <script>
+    /* ===================================================================
+       PHASE 2 — DOM WIRING
+       Shows the correct state section and builds the thumbnail strip.
+       =================================================================== */
+
+    /* -- Shorthand helpers -------------------------------------------- */
+    const $  = id => document.getElementById(id);
+    const el = tag => document.createElement(tag);
+
+    /* -------------------------------------------------------------------
+       T6.1 — selectedDay
+       Tracks which day the user is currently VIEWING in the day browser.
+       - Defaults to null on load; set to the current unlocked trip day
+         by render() once the trip is active.
+       - Updated to any day (1–10) when the user taps a thumbnail (T6.5).
+       ------------------------------------------------------------------- */
+    let selectedDay = null;
+
+    /* -- Reveal the correct state section ----------------------------- */
+    function showState(state) {
+      const sections = ["state-before", "state-locked", "state-active", "state-after"];
+      sections.forEach(id => $( id).classList.add("hidden"));
+      $(state).classList.remove("hidden");
+    }
+
+    /* -- Format a date as "May 21" ------------------------------------ */
+    function formatDate(dateStr) {
+      const d = parseLocalDate(dateStr);
+      return d.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+    }
+
+    /* -- Build one thumbnail slot ------------------------------------- */
+    function buildThumbSlot(day, currentDay, photoData) {
+      const slot = el("div");
+      slot.className = "thumb-slot";
+      slot.dataset.day = day;
+      slot.setAttribute("role", "listitem");
+      slot.setAttribute("aria-label", `Day ${day}`);
+
+      if (day === currentDay) slot.classList.add("thumb-current");   // today's actual day
+      if (day === selectedDay) slot.classList.add("thumb-selected");  // T6.6: browsed day
+      if (photoData)           slot.classList.add("thumb-has-photo");
+
+      // Photo image (hidden until a photo is uploaded)
+      const img = el("img");
+      img.className = "thumb-img" + (photoData ? "" : " hidden");
+      img.src = photoData || "";
+      img.alt = `Day ${day} photo`;
+      slot.appendChild(img);
+
+      // Number placeholder (shown when no photo)
+      const placeholder = el("span");
+      placeholder.className = "thumb-placeholder" + (photoData ? " hidden" : "");
+      placeholder.setAttribute("aria-hidden", "true");
+      placeholder.textContent = day;
+      slot.appendChild(placeholder);
+
+      // Day label below the square
+      const label = el("span");
+      label.className = "thumb-day-label";
+      label.textContent = `Day ${day}`;
+      slot.appendChild(label);
+
+      return slot;
+    }
+
+    /* -- Build the full thumbnail strip ------------------------------- */
+    function buildThumbnailStrip(currentDay) {
+      const strip   = $("thumbnail-strip");
+      const photos  = loadAllPhotos();
+      strip.innerHTML = "";
+
+      for (let d = 1; d <= TRIP_CONFIG.TOTAL_DAYS; d++) {
+        const photoData = photos[d - 1].dataURL;
+        strip.appendChild(buildThumbSlot(d, currentDay, photoData));
+      }
+    }
+
+    /* -- Populate the "before" state ---------------------------------- */
+    function populateBeforeState() {
+      $("departure-date-label").textContent = formatDate(TRIP_CONFIG.DEPARTURE_DATE);
+      $("days-until-number").textContent = getDaysUntilDeparture();
+    }
+
+    /* -- Populate the "locked" state ---------------------------------- */
+    function populateLockedState() {
+      const remaining = getTimeUntilUnlock();
+      $("unlock-countdown").textContent = remaining || "any moment now";
+    }
+
+    /* ===================================================================
+       T6.4 — renderSelectedDay(day)
+       Core day-browser renderer. Called on load and whenever the user
+       taps a thumbnail to browse a different day.
+
+       • Unlocked day (noon has passed) → show message card + upload zone
+       • Locked day (future)            → show locked card with countdown
+       =================================================================== */
+    function renderSelectedDay(day) {
+      selectedDay = day;
+
+      // ── Hero: always shows the currently VIEWED day ──────────────────
+      $("hero-day-number").textContent = day;
+      const fill = $("progress-bar-fill");
+      fill.style.width = `${(day / TRIP_CONFIG.TOTAL_DAYS) * 100}%`;
+      fill.parentElement.setAttribute("aria-valuenow", day);
+      $("progress-label").textContent =
+        `Day ${day} of ${TRIP_CONFIG.TOTAL_DAYS} · ${TRIP_CONFIG.TOTAL_DAYS - day} to go`;
+
+      // ── Branch: unlocked vs locked ──────────────────────────────────────
+      if (isUnlockedForDay(day)) {
+
+        // Show message + upload; hide locked card
+        $("day-locked-card").classList.add("hidden");
+        $("unlocked-day-content").classList.remove("hidden");
+
+        // Populate message card
+        $("message-day-badge-num").textContent = day;
+        $("message-text").textContent          = DAILY_MESSAGES[day - 1] || "💛";
+
+        // Update upload zone day label
+        document.querySelectorAll(".upload-day-label").forEach(span => {
+          span.textContent = day;
+        });
+
+        // Load & display saved photo for this specific day
+        const saved = loadPhoto(day);
+        if (saved) {
+          $("upload-zone-empty").classList.add("hidden");
+          $("upload-zone-preview").classList.remove("hidden");
+          $("upload-preview-img").src = saved;
+        } else {
+          $("upload-zone-empty").classList.remove("hidden");
+          $("upload-zone-preview").classList.add("hidden");
+          $("upload-preview-img").src = "";
+        }
+
+      } else {
+
+        // Show locked card; hide message + upload
+        $("day-locked-card").classList.remove("hidden");
+        $("unlocked-day-content").classList.add("hidden");
+
+        // Populate locked card content
+        const unlockDt = getUnlockDateForDay(day);
+        const dateStr  = unlockDt.toLocaleDateString("en-US", {
+          weekday: "long", month: "long", day: "numeric"
+        });
+        const timeStr  = unlockDt.toLocaleTimeString("en-US", {
+          hour: "numeric", minute: "2-digit"
+        });
+        $("locked-day-number").textContent  = day;
+        $("locked-unlock-date").textContent = `${dateStr} at ${timeStr}`;
+
+        const countdown = getTimeUntilDayUnlock(day);
+        $("locked-countdown").textContent   = countdown || "any moment";
+      }
+
+      // T6.6 — Update prev/next arrow disabled states
+      const prevBtn = $("hero-prev");
+      const nextBtn = $("hero-next");
+      if (prevBtn) prevBtn.disabled = (day <= 1);
+      if (nextBtn) nextBtn.disabled = (day >= TRIP_CONFIG.TOTAL_DAYS);
+
+      // T6.6 — Rebuild thumbnail strip to show new thumb-selected highlight
+      const tripState = getTripDay();
+      buildThumbnailStrip(tripState.status === "active" ? tripState.day : null);
+    }
+
+    /* -- Main render function ----------------------------------------- */
+    function render() {
+      const tripState = getTripDay();
+      const { status, day } = tripState;
+
+      switch (status) {
+        case "before":
+          showState("state-before");
+          populateBeforeState();
+          $("strip-section").classList.add("hidden");
+          $("page-footer").classList.add("hidden");
+          break;
+
+        case "locked":
+          showState("state-locked");
+          populateLockedState();
+          $("strip-section").classList.add("hidden");
+          $("page-footer").classList.add("hidden");
+          break;
+
+        case "active":
+          showState("state-active");
+          selectedDay = 1;
+          renderSelectedDay(selectedDay);
+          $("strip-section").classList.remove("hidden");
+          $("page-footer").classList.remove("hidden");
+          buildThumbnailStrip(day);
+          break;
+
+        case "after": {
+          // Trip is over — reuse active layout so all 10 days are browsable
+          showState("state-active");
+          const eyebrow = document.querySelector(".hero-eyebrow");
+          if (eyebrow) eyebrow.textContent = "🏡 Trip Complete";
+          selectedDay = TRIP_CONFIG.TOTAL_DAYS;
+          renderSelectedDay(selectedDay);
+          $("strip-section").classList.remove("hidden");
+          $("page-footer").classList.remove("hidden");
+          buildThumbnailStrip(null);
+          break;
+        }
+      }
+    }
+
+    /* -- Boot --------------------------------------------------------- */
+    document.addEventListener("DOMContentLoaded", render);
+
+  </script>
+
+
+  <!-- ─────────────────────────────────────────────────────────────────
+       PHASE 4 — JAVASCRIPT LOGIC
+       All interactive behaviour: upload, drag-drop, lightbox, reset.
+       No external APIs or libraries — 100% browser-native.
+       ───────────────────────────────────────────────────────────────── -->
+  <script>
+    /* ===================================================================
+       PHASE 4 — INTERACTIVE HANDLERS
+       =================================================================== */
+
+
+    /* -------------------------------------------------------------------
+       UTILITY: Read a File object → base64 DataURL (Promise)
+       Uses the browser's built-in FileReader API. No server needed.
+       ------------------------------------------------------------------- */
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        if (!file || !file.type.startsWith("image/")) {
+          reject(new Error("Not an image file"));
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload  = e => resolve(e.target.result);
+        reader.onerror = ()  => reject(new Error("Could not read file"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    /* -------------------------------------------------------------------
+       UTILITY: Show / clear the upload preview inside the zone
+       ------------------------------------------------------------------- */
+    function displayUploadedPhoto(dataURL) {
+      $("upload-zone-empty").classList.add("hidden");
+      $("upload-zone-preview").classList.remove("hidden");
+      $("upload-preview-img").src = dataURL;
+    }
+
+    function clearUploadZoneDisplay() {
+      $("upload-zone-empty").classList.remove("hidden");
+      $("upload-zone-preview").classList.add("hidden");
+      $("upload-preview-img").src = "";
+    }
+
+    /* -------------------------------------------------------------------
+       UTILITY: Full image-handling pipeline
+       read file → save to localStorage → update zone → refresh strip
+       ------------------------------------------------------------------- */
+    async function handleImageFile(file) {
+      // Save to the currently SELECTED (browsed) day, not just today
+      if (!selectedDay) return;
+
+      try {
+        const dataURL = await readFileAsDataURL(file);
+        const saved   = savePhoto(selectedDay, dataURL);
+
+        if (saved) {
+          displayUploadedPhoto(dataURL);
+          const tripState = getTripDay();
+          buildThumbnailStrip(tripState.day); // Refresh strip with new thumb
+        } else {
+          alert(
+            "⚠️ Couldn't save the photo — storage may be full.\n" +
+            "Try a smaller image, or reset old photos first."
+          );
+        }
+      } catch (err) {
+        alert("⚠️ Couldn't read that file. Please try a different image.");
+        console.error("[Phase4] handleImageFile error:", err);
+      }
+    }
+
+
+    /* ===================================================================
+       T4.5 — CLICK-TO-UPLOAD
+       Zone click → hidden <input type="file"> → FileReader → save
+       =================================================================== */
+    function initClickUpload() {
+      const zone = $("upload-zone");
+      if (!zone) return;
+
+      // ── Show the photo source sheet when the zone is tapped ──────────
+      // Exceptions: View button (handled by initLightbox) and Delete button
+      // (handled below) should NOT trigger the sheet.
+      zone.addEventListener("click", e => {
+        if (e.target.closest("#upload-view-btn"))   return;
+        if (e.target.closest("#upload-delete-btn")) return;
+        showPhotoSheet();
+      });
+
+      // Keyboard accessibility
+      zone.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          showPhotoSheet();
+        }
+      });
+
+      // ── Photo source sheet helpers ────────────────────────────────────
+      function showPhotoSheet() {
+        const backdrop = $("photo-sheet-backdrop");
+        const sheet    = $("photo-sheet");
+        if (!sheet) return;
+
+        backdrop.classList.remove("hidden");
+        sheet.classList.remove("hidden");
+        requestAnimationFrame(() => {
+          backdrop.classList.add("visible");
+          sheet.classList.add("visible");
+        });
+      }
+
+      function hidePhotoSheet() {
+        const backdrop = $("photo-sheet-backdrop");
+        const sheet    = $("photo-sheet");
+        backdrop.classList.remove("visible");
+        sheet.classList.remove("visible");
+        // Wait for CSS transition before hiding from layout
+        setTimeout(() => {
+          backdrop.classList.add("hidden");
+          sheet.classList.add("hidden");
+        }, 300);
+      }
+
+      // Close on backdrop click or Cancel button
+      $("photo-sheet-backdrop").addEventListener("click", hidePhotoSheet);
+      $("src-cancel").addEventListener("click", hidePhotoSheet);
+
+      // ── Wire each source button to its hidden file input ──────────────
+      function wireSource(btnId, inputId) {
+        const btn   = $(btnId);
+        const input = $(inputId);
+        if (!btn || !input) return;
+
+        btn.addEventListener("click", () => {
+          hidePhotoSheet();
+          // Brief delay so sheet closes before native picker opens
+          setTimeout(() => input.click(), 220);
+        });
+
+        input.addEventListener("change", e => {
+          const file = e.target.files[0];
+          if (file) handleImageFile(file);
+          input.value = ""; // Reset so same file can be selected again
+        });
+      }
+
+      wireSource("src-camera",  "file-input-camera");
+      wireSource("src-gallery", "file-input-gallery");
+      wireSource("src-files",   "file-input-files");
+
+      // ── Delete this day's photo ────────────────────────────────────
+      const deleteBtn = $("upload-delete-btn");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", e => {
+          e.stopPropagation(); // Don't bubble to zone (would show photo sheet)
+
+          const confirmed = window.confirm(
+            `🗑️  Delete the photo for Day ${selectedDay}?\n\n` +
+            "You can upload a new one any time after deleting."
+          );
+          if (!confirmed) return;
+
+          // Remove from localStorage
+          deletePhoto(selectedDay);
+
+          // Reset the upload zone back to empty state
+          $("upload-zone-empty").classList.remove("hidden");
+          $("upload-zone-preview").classList.add("hidden");
+          $("upload-preview-img").src = "";
+
+          // Refresh strip so the thumbnail clears
+          const tripState = getTripDay();
+          buildThumbnailStrip(tripState.status === "active" ? tripState.day : null);
+        });
+      }
+    }
+
+
+    /* ===================================================================
+       T4.6 — DRAG-AND-DROP UPLOAD
+       dragover / dragleave / drop on the upload zone
+       =================================================================== */
+    function initDragDrop() {
+      const zone    = $("upload-zone");
+      const overlay = $("upload-dragover-overlay");
+
+      if (!zone) return;
+
+      // Prevent browser from opening the file in a new tab
+      zone.addEventListener("dragover", e => {
+        e.preventDefault();
+        zone.classList.add("drag-over");
+        overlay.classList.remove("hidden");
+      });
+
+      zone.addEventListener("dragenter", e => {
+        e.preventDefault();
+        zone.classList.add("drag-over");
+        overlay.classList.remove("hidden");
+      });
+
+      // Only remove highlight when leaving the zone element itself,
+      // not when moving between its children
+      zone.addEventListener("dragleave", e => {
+        if (!zone.contains(e.relatedTarget)) {
+          zone.classList.remove("drag-over");
+          overlay.classList.add("hidden");
+        }
+      });
+
+      // File dropped
+      zone.addEventListener("drop", e => {
+        e.preventDefault();
+        zone.classList.remove("drag-over");
+        overlay.classList.add("hidden");
+
+        const file = e.dataTransfer.files[0];
+        if (file) handleImageFile(file);
+      });
+
+      // Prevent the whole page from navigating on accidental drops outside the zone
+      document.addEventListener("dragover", e => e.preventDefault());
+      document.addEventListener("drop",     e => e.preventDefault());
+    }
+
+
+    /* ===================================================================
+       T4.8 — LIGHTBOX
+       Open: thumbnail click → inject photo + day label → show overlay
+       Close: backdrop click | close button | ESC key
+       =================================================================== */
+    /* T7.9 — iOS-safe scroll-lock helpers
+       iOS Safari ignores `overflow: hidden` on body for scroll prevention.
+       The fix: position the body as fixed, offset by scrollY, then restore.
+       ------------------------------------------------------------------ */
+    function lockBodyScroll() {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top      = `-${scrollY}px`;
+      document.body.style.width    = "100%";
+      document.body.dataset.scrollY = scrollY;
+    }
+
+    function unlockBodyScroll() {
+      const scrollY = parseInt(document.body.dataset.scrollY || "0", 10);
+      document.body.style.position = "";
+      document.body.style.top      = "";
+      document.body.style.width    = "";
+      window.scrollTo(0, scrollY);
+    }
+
+    function openLightbox(day, dataURL) {
+      $("lightbox-img").src              = dataURL;
+      $("lightbox-day-label").textContent = `Day ${day} 📸`;
+      $("lightbox").classList.remove("hidden");
+      lockBodyScroll(); // T7.9 — works on iOS Safari
+    }
+
+    function closeLightbox() {
+      $("lightbox").classList.add("hidden");
+      $("lightbox-img").src = "";
+      unlockBodyScroll();  // T7.9 — restores scroll position
+    }
+
+    function initLightbox() {
+      // Close triggers
+      $("lightbox-backdrop").addEventListener("click",  closeLightbox);
+      $("lightbox-close").addEventListener("click",     closeLightbox);
+      document.addEventListener("keydown", e => {
+        if (e.key === "Escape") closeLightbox();
+      });
+
+      // ── Thumbnail click → NAVIGATE to that day (T6.5 behaviour) ───────
+      // Thumbnail strip is rebuilt dynamically, so use event delegation.
+      // Clicking a thumbnail now browses that day; it does NOT directly
+      // open the lightbox (the 'View' button inside the day view does that).
+      $("thumbnail-strip").addEventListener("click", e => {
+        const slot = e.target.closest(".thumb-slot");
+        if (!slot) return;
+
+        const day = parseInt(slot.dataset.day, 10);
+        if (!day) return;
+
+        // Navigate to that day
+        renderSelectedDay(day);
+      });
+
+      // ── 'View' button inside the upload zone → open lightbox ────────
+      // The button exists in the HTML; wire it here.
+      const viewBtn = $("upload-view-btn");
+      if (viewBtn) {
+        viewBtn.addEventListener("click", e => {
+          e.stopPropagation(); // Don't bubble to upload zone (would open picker)
+          const dataURL = selectedDay ? loadPhoto(selectedDay) : null;
+          if (dataURL) openLightbox(selectedDay, dataURL);
+        });
+      }
+    }
+
+
+    /* ===================================================================
+       T4.9 — RESET BUTTON
+       confirm() → deleteAllPhotos() → reload
+       =================================================================== */
+    function initReset() {
+      const btn = $("reset-btn");
+      if (!btn) return;
+
+      btn.addEventListener("click", () => {
+        const confirmed = window.confirm(
+          "🗑️  Delete ALL saved photos?\n\n" +
+          "This cannot be undone.\n" +
+          "Only do this once the trip is over."
+        );
+        if (confirmed) {
+          deleteAllPhotos();
+          location.reload();
+        }
+      });
+    }
+
+
+    /* ===================================================================
+       LIVE COUNTDOWN TICKER
+       Polls every 60 s to keep departure/unlock countdowns accurate.
+       If the clock ticks past UNLOCK_HOUR, auto-re-renders the full page.
+       =================================================================== */
+    function initTicker() {
+      setInterval(() => {
+        const { status } = getTripDay();
+
+        // Update "X days to go" in the before-state
+        if (status === "before") {
+          const el = $("days-until-number");
+          if (el) el.textContent = getDaysUntilDeparture();
+        }
+
+        // Update "Xh Ym until unlock" in the locked-state
+        if (status === "locked") {
+          const t  = getTimeUntilUnlock();
+          const el = $("unlock-countdown");
+          if (el) el.textContent = t || "any moment now…";
+
+          // Just crossed noon — full re-render to activate the journal
+          if (!t) render();
+        }
+      }, 60_000); // every 60 seconds
+    }
+
+
+    /* ===================================================================
+       T6.7 — DAY NAVIGATION ARROWS (prev ◀ / next ▶)
+       Wires the hero-prev and hero-next buttons to browse days.
+       Disabled state is managed by renderSelectedDay() on each render.
+       =================================================================== */
+    function initDayNav() {
+      const prevBtn = $("hero-prev");
+      const nextBtn = $("hero-next");
+      if (!prevBtn || !nextBtn) return;
+
+      prevBtn.addEventListener("click", () => {
+        if (selectedDay > 1) renderSelectedDay(selectedDay - 1);
+      });
+
+      nextBtn.addEventListener("click", () => {
+        if (selectedDay < TRIP_CONFIG.TOTAL_DAYS) renderSelectedDay(selectedDay + 1);
+      });
+    }
+
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initClickUpload(); // T4.5
+      initDragDrop();    // T4.6
+      initLightbox();    // T4.8
+      initReset();       // T4.9
+      initTicker();      // Live countdowns
+      initDayNav();      // T6.7 — prev/next arrows
+    });
+
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       PHOTO SOURCE SHEET
+       Fixed bottom sheet that slides up when the user taps the upload
+       zone. Offers Camera, Gallery, and Files as distinct options.
+       ═══════════════════════════════════════════════════════════════ -->
+
+  <!-- Semi-transparent backdrop -->
+  <div class="photo-sheet-backdrop hidden" id="photo-sheet-backdrop"
+       aria-hidden="true"></div>
+
+  <!-- The sheet itself -->
+  <div class="photo-sheet hidden" id="photo-sheet"
+       role="dialog" aria-modal="true" aria-label="Choose how to add a photo">
+
+    <!-- Drag handle (decorative) -->
+    <div class="photo-sheet-handle" aria-hidden="true"></div>
+
+    <p class="photo-sheet-title">Add a Photo</p>
+
+    <div class="photo-sheet-options">
+
+      <button class="photo-source-btn" id="src-camera" type="button">
+        <span class="photo-source-icon">📷</span>
+        <span class="photo-source-label">Camera</span>
+      </button>
+
+      <button class="photo-source-btn" id="src-gallery" type="button">
+        <span class="photo-source-icon">🖼️</span>
+        <span class="photo-source-label">Gallery</span>
+      </button>
+
+      <button class="photo-source-btn" id="src-files" type="button">
+        <span class="photo-source-icon">📁</span>
+        <span class="photo-source-label">Files</span>
+      </button>
+
+    </div><!-- /.photo-sheet-options -->
+
+    <button class="photo-sheet-cancel" id="src-cancel" type="button">Cancel</button>
+
+  </div><!-- /#photo-sheet -->
+
+  <!-- Three hidden file inputs — each wired to a source option above -->
+  <!-- Camera: directly opens back camera on iOS/Android -->
+  <input type="file" id="file-input-camera"
+         accept="image/*" capture="environment"
+         aria-label="Take a photo" style="display:none" />
+  <!-- Gallery: standard picker — iOS shows Camera/Gallery/Browse action sheet -->
+  <input type="file" id="file-input-gallery"
+         accept="image/*"
+         aria-label="Choose from gallery" style="display:none" />
+  <!-- Files: same as gallery on most platforms; on iOS picks from Files app -->
+  <input type="file" id="file-input-files"
+         accept="image/*"
+         aria-label="Browse files" style="display:none" />
+
+</body>
+</html>
