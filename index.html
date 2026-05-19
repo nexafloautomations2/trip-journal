@@ -162,7 +162,53 @@
       gap            : .2rem;
     }
 
-    .countdown-pill #days-until-number,
+    /* D:H:M:S countdown grid */
+    .countdown-grid {
+      display        : flex;
+      align-items    : center;
+      gap            : .5rem;
+      background     : var(--bg-card);
+      border         : 2px solid var(--accent-light);
+      border-radius  : var(--radius-card);
+      padding        : 1.25rem 1.5rem;
+      box-shadow     : var(--shadow-card);
+    }
+
+    .countdown-unit {
+      display        : flex;
+      flex-direction : column;
+      align-items    : center;
+      min-width      : 2.8rem;
+    }
+
+    .countdown-value {
+      font-size   : 2.4rem;
+      font-weight : 800;
+      color       : var(--accent-primary);
+      line-height : 1;
+      font-variant-numeric: tabular-nums; /* digits don't jump width */
+    }
+
+    .countdown-sep {
+      font-size   : 2rem;
+      font-weight : 800;
+      color       : var(--accent-light);
+      line-height : 1;
+      margin-bottom: 1rem; /* align with digits, above label */
+    }
+
+    .before-flirt-msg {
+      margin-top  : 1.25rem;
+      font-size   : .95rem;
+      font-weight : 600;
+      font-style  : italic;
+      color       : var(--text-mid);
+      text-align  : center;
+      max-width   : 28ch;
+      line-height : 1.5;
+    }
+
+    /* Keep the existing pill style for the locked-state unlock timer */
     .countdown-pill #unlock-countdown {
       font-size   : 2.5rem;
       font-weight : 800;
@@ -966,11 +1012,30 @@
         This journal will come alive on that day. 🌸
       </p>
 
-      <!-- Countdown to departure -->
-      <div class="countdown-pill" id="days-until-departure">
-        <span id="days-until-number">—</span>
-        <span class="countdown-label">days to go</span>
+      <!-- Live D : H : M : S countdown to departure -->
+      <div class="countdown-grid" id="days-until-departure" aria-live="polite">
+        <div class="countdown-unit">
+          <span class="countdown-value" id="cd-days">—</span>
+          <span class="countdown-label">Days</span>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit">
+          <span class="countdown-value" id="cd-hours">—</span>
+          <span class="countdown-label">Hours</span>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit">
+          <span class="countdown-value" id="cd-mins">—</span>
+          <span class="countdown-label">Mins</span>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit">
+          <span class="countdown-value" id="cd-secs">—</span>
+          <span class="countdown-label">Secs</span>
+        </div>
       </div>
+
+      <p class="before-flirt-msg">"Flirting sehat ke liye aacha hota hai, just like yoga 🤪"</p>
 
     </section><!-- /#state-before -->
 
@@ -1387,6 +1452,22 @@
       return Math.ceil((depMidnight - todayMidnight) / (24 * 60 * 60 * 1000));
     }
 
+    /* Returns exact D/H/M/S until departure-day noon (the first unlock) */
+    function getTimeUntilDepartureParts() {
+      const dep     = parseLocalDate(TRIP_CONFIG.DEPARTURE_DATE);
+      const target  = new Date(dep.getFullYear(), dep.getMonth(), dep.getDate(),
+                               TRIP_CONFIG.UNLOCK_HOUR, 0, 0);
+      const diffMs  = target - new Date();
+      if (diffMs <= 0) return null;
+      const totalSecs = Math.floor(diffMs / 1000);
+      return {
+        days  : Math.floor(totalSecs / 86400),
+        hours : Math.floor((totalSecs % 86400) / 3600),
+        mins  : Math.floor((totalSecs % 3600) / 60),
+        secs  : totalSecs % 60,
+      };
+    }
+
     /* -------------------------------------------------------------------
        T6.2 — isUnlockedForDay(day)
        Returns true if the given trip day is available to view.
@@ -1571,9 +1652,20 @@
     }
 
     /* -- Populate the "before" state ---------------------------------- */
+    function updateBeforeCountdown() {
+      const parts = getTimeUntilDepartureParts();
+      const pad   = n => String(n).padStart(2, "0");
+      if (parts) {
+        $("cd-days" ).textContent = parts.days;       // no pad — can be >9
+        $("cd-hours").textContent = pad(parts.hours);
+        $("cd-mins" ).textContent = pad(parts.mins);
+        $("cd-secs" ).textContent = pad(parts.secs);
+      }
+    }
+
     function populateBeforeState() {
       $("departure-date-label").textContent = formatDate(TRIP_CONFIG.DEPARTURE_DATE);
-      $("days-until-number").textContent = getDaysUntilDeparture();
+      updateBeforeCountdown(); // set immediately; ticker keeps it live
     }
 
     /* -- Populate the "locked" state ---------------------------------- */
@@ -2042,22 +2134,17 @@
       setInterval(() => {
         const { status } = getTripDay();
 
-        // Update "X days to go" in the before-state
-        if (status === "before") {
-          const el = $("days-until-number");
-          if (el) el.textContent = getDaysUntilDeparture();
-        }
+        // Live D:H:M:S countdown on the before-state
+        if (status === "before") updateBeforeCountdown();
 
         // Update "Xh Ym until unlock" in the locked-state
         if (status === "locked") {
           const t  = getTimeUntilUnlock();
           const el = $("unlock-countdown");
           if (el) el.textContent = t || "any moment now…";
-
-          // Just crossed noon — full re-render to activate the journal
-          if (!t) render();
+          if (!t) render(); // just crossed noon — re-render to show Day 1
         }
-      }, 60_000); // every 60 seconds
+      }, 1_000); // tick every second for live countdown
     }
 
 
