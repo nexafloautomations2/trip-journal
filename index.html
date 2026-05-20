@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="A personal trip journal — daily messages and photo memories." />
-  <title>Your Trip Journal 🌸</title>
+  <title>Ishika's Trip Journal 🌸</title>
 
   <!--
     =====================================================================
@@ -127,7 +127,8 @@
       font-size: 1rem;
       font-weight: 700;
       color: var(--text-mid);
-      margin-bottom: .75rem;
+      margin-top: .25rem;
+      margin-bottom: 1rem;
       letter-spacing: .02em;
     }
 
@@ -383,6 +384,7 @@
        UPLOAD SECTION & ZONE
        ═══════════════════════════════════════════════════════════ */
     .upload-section {
+      margin-top: 1.5rem;
       margin-bottom: 1.75rem;
       animation: fadeSlideUp .5s var(--ease-out) .2s both;
     }
@@ -973,25 +975,58 @@
        FOOTER & RESET BUTTON
        ═══════════════════════════════════════════════════════════ */
     .page-footer {
-      text-align: center;
-      padding-top: 1rem;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: .75rem;
+      padding-top: 1.25rem;
+      flex-wrap: wrap;
     }
 
     .reset-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .3rem;
+      padding: .55rem 1rem;
       background: transparent;
-      border: none;
+      border: 1.5px solid rgba(192, 57, 43, .25);
+      border-radius: var(--radius-pill);
       font-family: inherit;
-      font-size: .75rem;
+      font-size: .8rem;
+      font-weight: 700;
       color: var(--text-soft);
       cursor: pointer;
-      padding: .3rem .5rem;
-      border-radius: 6px;
-      transition: color .2s, background .2s;
+      transition: color .2s, background .2s, border-color .2s;
     }
 
     .reset-btn:hover {
       color: #c0392b;
-      background: rgba(192, 57, 43, .08);
+      border-color: rgba(192, 57, 43, .5);
+      background: rgba(192, 57, 43, .07);
+    }
+
+    .master-reset-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .3rem;
+      padding: .55rem 1rem;
+      background: rgba(185, 28, 28, .07);
+      border: 1.5px solid rgba(185, 28, 28, .25);
+      border-radius: var(--radius-pill);
+      color: #b91c1c;
+      font-size: .8rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .2s, border-color .2s;
+    }
+
+    .master-reset-btn:hover {
+      background: rgba(185, 28, 28, .16);
+      border-color: rgba(185, 28, 28, .5);
     }
 
     .reset-note {
@@ -1111,7 +1146,228 @@
         padding-top: 2.5rem;
       }
     }
+
+    /* ── PIN SCREEN ──────────────────────────────────────────── */
+    #pin-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-page);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .pin-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-card);
+      border: 2px solid var(--accent-light);
+      padding: 2.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      width: min(340px, 90vw);
+      text-align: center;
+    }
+
+    .pin-icon {
+      font-size: 2.5rem;
+    }
+
+    .pin-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-dark);
+      margin: 0;
+    }
+
+    .pin-sub {
+      font-size: .85rem;
+      color: var(--text-soft);
+      margin: 0;
+    }
+
+    #pin-input {
+      width: 100%;
+      border: 2px solid var(--accent-light);
+      border-radius: var(--radius-pill);
+      padding: .75rem 1.25rem;
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: .6rem;
+      color: var(--text-dark);
+      background: var(--bg-page);
+      outline: none;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    #pin-input:focus {
+      border-color: var(--accent-primary);
+      box-shadow: var(--shadow-glow);
+    }
+
+    #pin-submit {
+      width: 100%;
+      padding: .85rem;
+      border: none;
+      border-radius: var(--radius-pill);
+      background: var(--accent-primary);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .2s;
+    }
+
+    #pin-submit:hover {
+      opacity: .88;
+    }
+
+    .pin-error {
+      color: #d94040;
+      font-size: .9rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    /* ── COMMENT SECTION ─────────────────────────────────────── */
+    .comment-section {
+      background: var(--bg-card);
+      border: 2px solid var(--accent-light);
+      border-radius: var(--radius-card);
+      padding: 1.25rem 1.25rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: .8rem;
+      margin-top: .25rem;
+    }
+
+    .comment-section-heading {
+      font-size: .8rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-soft);
+      margin: 0;
+    }
+
+    .comment-display {
+      display: flex;
+      flex-direction: column;
+      gap: .55rem;
+    }
+
+    .comment-bubble {
+      border-radius: 14px;
+      padding: .55rem .9rem;
+      font-size: .9rem;
+      line-height: 1.45;
+      max-width: 90%;
+    }
+
+    .comment-bubble.comment-her {
+      background: #f0e8ff;
+      border-left: 3px solid #9B7DD4;
+      align-self: flex-start;
+    }
+
+    .comment-bubble.comment-him {
+      background: var(--accent-pale);
+      border-left: 3px solid var(--accent-primary);
+      align-self: flex-end;
+    }
+
+    .comment-author {
+      display: block;
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      margin-bottom: .2rem;
+    }
+
+    .comment-bubble p {
+      margin: 0;
+      color: var(--text-dark);
+      word-break: break-word;
+    }
+
+    .comment-empty {
+      font-size: .85rem;
+      color: var(--text-soft);
+      text-align: center;
+      font-style: italic;
+      margin: 0;
+    }
+
+    #comment-input {
+      width: 100%;
+      border: 2px solid var(--accent-light);
+      border-radius: 12px;
+      padding: .65rem .9rem;
+      font-size: .9rem;
+      font-family: inherit;
+      color: var(--text-dark);
+      background: var(--bg-page);
+      resize: vertical;
+      min-height: 68px;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    #comment-input:focus {
+      border-color: var(--accent-primary);
+    }
+
+    #comment-save-btn {
+      align-self: flex-end;
+      padding: .5rem 1.25rem;
+      border: none;
+      border-radius: var(--radius-pill);
+      background: var(--accent-primary);
+      color: #fff;
+      font-size: .85rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .2s;
+    }
+
+    #comment-save-btn:hover {
+      opacity: .88;
+    }
+
+    #comment-delete-btn {
+      align-self: flex-end;
+      padding: .5rem 1.25rem;
+      border: none;
+      border-radius: var(--radius-pill);
+      background: #fee2e2;
+      color: #b91c1c;
+      font-size: .85rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity .2s;
+    }
+
+    #comment-delete-btn:hover {
+      opacity: .8;
+    }
+
+    .comment-btn-row {
+      display: flex;
+      gap: .5rem;
+      align-self: flex-end;
+    }
   </style>
+  <!-- Firebase Compat SDK (no bundler needed) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
@@ -1119,7 +1375,19 @@
   <!-- ═══════════════════════════════════════════════════════════════
        ROOT WRAPPER — All content lives inside this centred container
        ═══════════════════════════════════════════════════════════════ -->
-  <main class="app-wrapper" id="app">
+  <!-- ── PIN SCREEN ──────────────────────────────────────────── -->
+  <div id="pin-screen">
+    <div class="pin-card">
+      <div class="pin-icon">🔐</div>
+      <h2 class="pin-title">Trip Journal</h2>
+      <p class="pin-sub">Enter your PIN to continue</p>
+      <input type="password" id="pin-input" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off" />
+      <button id="pin-submit" type="button">Open Journal ✨</button>
+      <p class="pin-error hidden" id="pin-error">Incorrect PIN — try again</p>
+    </div>
+  </div>
+
+  <main class="app-wrapper hidden" id="app">
 
 
     <!-- ╔══════════════════════════════════════════════════════════╗
@@ -1215,7 +1483,7 @@
       <header class="hero" aria-label="Trip progress">
 
         <!-- Small "Your trip journal" label -->
-        <p class="hero-eyebrow">✈️ Your Trip Journal</p>
+        <p class="hero-eyebrow">✈️ Ishika's Trip Journal - Made With Love ❤️</p>
 
         <!-- Day navigation: ◀ Day 5 ▶ -->
         <div class="hero-nav">
@@ -1286,6 +1554,19 @@
 
         </article><!-- /.message-card -->
 
+        <!-- ── COMMENT SECTION ────────────────────────────────────── -->
+        <section class="comment-section" id="comment-section">
+          <p class="comment-section-heading">💬 Notes</p>
+          <div class="comment-display" id="comment-display">
+            <p class="comment-empty" id="comment-empty">No notes yet for this day.</p>
+          </div>
+          <textarea id="comment-input" placeholder="Leave a note for this day…" rows="3"></textarea>
+          <div class="comment-btn-row">
+            <button id="comment-save-btn" type="button">Save Note 💾</button>
+            <button id="comment-delete-btn" type="button" class="hidden">Delete 🗑️</button>
+          </div>
+        </section>
+
 
         <!-- ── PHOTO UPLOAD ZONE ──────────────────────────────────
              Drag-and-drop OR click to select.
@@ -1293,7 +1574,7 @@
              ─────────────────────────────────────────────────────── -->
         <section class="upload-section" aria-label="Upload today's photo">
 
-          <h2 class="section-heading">Today's Photo 📷</h2>
+          <h2 class="section-heading">Today's Photo 📷 - Add a picture you clicked today!</h2>
 
           <!-- The drop zone itself -->
           <div class="upload-zone" id="upload-zone" role="button" tabindex="0"
@@ -1375,6 +1656,11 @@
         Reset all photos
         <span class="reset-note">(only if trip is over)</span>
       </button>
+      <!-- Master delete — only shown to Devansh after PIN login -->
+      <button class="master-reset-btn hidden" id="master-reset-btn" aria-label="Master reset all data">
+        🔒 Master Reset
+        <span class="reset-note">(photos + notes, all days)</span>
+      </button>
     </footer>
 
 
@@ -1413,12 +1699,12 @@
     /* ===================================================================
        PHASE 1 — CONFIG & DATA LAYER
        ===================================================================
-
+ 
        HOW TO EDIT THIS FILE LATER:
        1. Change departure / return dates below (TRIP_CONFIG section).
        2. Edit the messages in the DAILY_MESSAGES section.
        That's it. Everything else is automatic.
-
+ 
        =================================================================== */
 
 
@@ -1446,7 +1732,7 @@
       //   DEBUG_OVERRIDE_DAY: 5   → shows Day 5
       //   DEBUG_OVERRIDE_DAY: 10  → shows Day 10 (last day)
       //   DEBUG_OVERRIDE_DAY: null → normal live behaviour
-      DEBUG_OVERRIDE_DAY: null,        // null = live mode (real dates). Set 1-10 to test a specific day.
+      DEBUG_OVERRIDE_DAY: null,          // TEST MODE — all 10 days unlocked (index.html stays null)
     };
 
 
@@ -1583,7 +1869,7 @@
     /* -------------------------------------------------------------------
        T6.2 — isUnlockedForDay(day)
        Returns true if the given trip day is available to view.
-
+ 
        Uses getTripDay() (not raw Date comparison) so it works correctly
        in both live mode AND when DEBUG_OVERRIDE_DAY is set:
          • "after"  → all 10 days are unlocked
@@ -1668,6 +1954,7 @@
     }
 
     function deletePhoto(day) {
+      // Overridden by Firebase script below — this localStorage version is inactive
       localStorage.removeItem(`${LS_PREFIX}day_${day}`);
       localStorage.removeItem(`${LS_PREFIX}date_${day}`);
     }
@@ -1676,6 +1963,233 @@
       for (let d = 1; d <= TRIP_CONFIG.TOTAL_DAYS; d++) {
         deletePhoto(d);
       }
+    }
+  </script>
+
+
+  <!-- ── FIREBASE INIT + CACHE + PIN GATE ──────────────────────────── -->
+  <script>
+    /* Firebase config */
+    const firebaseConfig = {
+      apiKey: "AIzaSyC15RuB0lbw80ARYHvvg7n2LHOtPsNjkFA",
+      authDomain: "trip-journal-52e2c.firebaseapp.com",
+      projectId: "trip-journal-52e2c",
+      storageBucket: "trip-journal-52e2c.firebasestorage.app",
+      messagingSenderId: "125090125468",
+      appId: "1:125090125468:web:60a4057a944c7076eabf59"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    /* Identity */
+    const PINS = { "3094": "her", "0106": "him" };
+    let currentUser = null; // "her" | "him"
+
+    /* In-memory cache — updated by onSnapshot */
+    const dayCache = {}; // { 1: {photo, photoBy, herComment, himComment}, … }
+
+    /* Image compression via canvas → keeps Firestore doc < 1 MB */
+    function compressImage(dataURL, maxW, maxH, quality) {
+      maxW = maxW || 1024; maxH = maxH || 1024; quality = quality || 0.75;
+      return new Promise(function (resolve) {
+        var img = new Image();
+        img.onload = function () {
+          var ratio = Math.min(1, maxW / img.width, maxH / img.height);
+          var w = Math.round(img.width * ratio);
+          var h = Math.round(img.height * ratio);
+          var canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.src = dataURL;
+      });
+    }
+
+    /* Override savePhoto — writes to Firestore + updates cache */
+    function savePhoto(day, dataURL) {
+      var data = { photo: dataURL, photoBy: currentUser, photoAt: new Date().toISOString() };
+      db.collection("days").doc(String(day)).set(data, { merge: true })
+        .catch(function (e) { console.error("savePhoto error:", e); });
+      if (!dayCache[day]) dayCache[day] = {};
+      Object.assign(dayCache[day], data);
+      return true;
+    }
+
+    /* Override loadPhoto — reads from in-memory cache */
+    function loadPhoto(day) {
+      return (dayCache[day] && dayCache[day].photo) ? dayCache[day].photo : null;
+    }
+
+    /* Override deletePhoto — removes photo fields from Firestore + cache
+       Uses .set({merge:true}) instead of .update() so it is safe even if
+       the document does not exist yet (e.g. a day with no data at all).  */
+    function deletePhoto(day) {
+      db.collection("days").doc(String(day)).set({
+        photo: firebase.firestore.FieldValue.delete(),
+        photoBy: firebase.firestore.FieldValue.delete(),
+        photoAt: firebase.firestore.FieldValue.delete()
+      }, { merge: true })
+        .catch(function (e) { console.error("deletePhoto error:", e); });
+      if (dayCache[day]) {
+        delete dayCache[day].photo;
+        delete dayCache[day].photoBy;
+        delete dayCache[day].photoAt;
+      }
+    }
+
+    /* Override loadAllPhotos — reads from cache */
+    function loadAllPhotos() {
+      var results = [];
+      for (var d = 1; d <= TRIP_CONFIG.TOTAL_DAYS; d++) {
+        results.push({ dataURL: (dayCache[d] && dayCache[d].photo) ? dayCache[d].photo : null, savedAt: null });
+      }
+      return results;
+    }
+
+    /* Comment helpers */
+    function saveComment(day, text) {
+      var field = currentUser === "her" ? "herComment" : "himComment";
+      var payload = {};
+      payload[field] = text.trim();
+      payload[field + "At"] = new Date().toISOString();
+      db.collection("days").doc(String(day)).set(payload, { merge: true })
+        .catch(function (e) { console.error("saveComment error:", e); });
+      if (!dayCache[day]) dayCache[day] = {};
+      dayCache[day][field] = text.trim();
+    }
+
+    /* deleteComment — uses .set({merge:true}) for safety (same reason as deletePhoto) */
+    function deleteComment(day) {
+      var field = currentUser === "her" ? "herComment" : "himComment";
+      var payload = {};
+      payload[field] = firebase.firestore.FieldValue.delete();
+      payload[field + "At"] = firebase.firestore.FieldValue.delete();
+      db.collection("days").doc(String(day)).set(payload, { merge: true })
+        .catch(function (e) { console.error("deleteComment error:", e); });
+      if (dayCache[day]) {
+        delete dayCache[day][field];
+        delete dayCache[day][field + "At"];
+      }
+    }
+
+    /* Master delete — batch-wipes all 10 day documents from Firestore */
+    function masterDeleteAll() {
+      var batch = db.batch();
+      for (var d = 1; d <= TRIP_CONFIG.TOTAL_DAYS; d++) {
+        batch.delete(db.collection("days").doc(String(d)));
+      }
+      return batch.commit();
+    }
+
+    function getComments(day) {
+      var d = dayCache[day] || {};
+      return { her: d.herComment || null, him: d.himComment || null };
+    }
+
+    function escapeHtml(str) {
+      var div = document.createElement("div");
+      div.appendChild(document.createTextNode(str));
+      return div.innerHTML;
+    }
+
+    /* Render comments into the comment section */
+    function renderComments(day) {
+      var display = document.getElementById("comment-display");
+      var emptyEl = document.getElementById("comment-empty");
+      var input = document.getElementById("comment-input");
+      if (!display) return;
+      var comments = getComments(day);
+      display.innerHTML = "";
+      var hasAny = false;
+      if (comments.her) {
+        hasAny = true;
+        var b = document.createElement("div");
+        b.className = "comment-bubble comment-her";
+        b.innerHTML = "<span class='comment-author'>Ishika 💜</span><p>" + escapeHtml(comments.her) + "</p>";
+        display.appendChild(b);
+      }
+      if (comments.him) {
+        hasAny = true;
+        var b2 = document.createElement("div");
+        b2.className = "comment-bubble comment-him";
+        b2.innerHTML = "<span class='comment-author'>Devansh 💙</span><p>" + escapeHtml(comments.him) + "</p>";
+        display.appendChild(b2);
+      }
+      if (!hasAny) {
+        var empty = document.createElement("p");
+        empty.className = "comment-empty";
+        empty.textContent = "No notes yet for this day.";
+        display.appendChild(empty);
+      }
+      // Only Ishika can write notes — hide input area for Devansh entirely
+      var inputArea = document.getElementById("comment-input");
+      var btnRow = document.querySelector(".comment-btn-row");
+      if (currentUser === "him") {
+        // Devansh: read-only — hide textarea and buttons
+        if (inputArea) inputArea.classList.add("hidden");
+        if (btnRow) btnRow.classList.add("hidden");
+      } else {
+        // Ishika: full edit access
+        if (inputArea) inputArea.classList.remove("hidden");
+        var myComment = comments.her;
+        if (inputArea) inputArea.value = myComment || "";
+        var saveBtn = document.getElementById("comment-save-btn");
+        var deleteBtn = document.getElementById("comment-delete-btn");
+        if (saveBtn) saveBtn.textContent = myComment ? "Update Note ✏️" : "Save Note 💾";
+        if (deleteBtn) deleteBtn.classList.toggle("hidden", !myComment);
+        if (btnRow) btnRow.classList.remove("hidden");
+      }
+    }
+
+    /* Real-time Firestore sync */
+    function initFirebaseSync() {
+      db.collection("days").onSnapshot(function (snapshot) {
+        snapshot.forEach(function (doc) {
+          dayCache[parseInt(doc.id)] = doc.data() || {};
+        });
+        if (typeof selectedDay !== "undefined" && selectedDay) {
+          renderSelectedDay(selectedDay);
+        }
+        if (typeof buildThumbnailStrip === "function") {
+          var ts = getTripDay();
+          if (ts.status === "active" || ts.status === "after") {
+            buildThumbnailStrip(ts.status === "active" ? ts.day : null);
+          }
+        }
+      }, function (err) { console.error("Firestore sync error:", err); });
+    }
+
+    /* PIN gate — validates then boots the app */
+    function initPinScreen() {
+      var pinInput = document.getElementById("pin-input");
+      var pinSubmit = document.getElementById("pin-submit");
+      var pinError = document.getElementById("pin-error");
+      setTimeout(function () { pinInput.focus(); }, 150);
+
+      function tryPin() {
+        var role = PINS[pinInput.value.trim()];
+        if (role) {
+          currentUser = role;
+          document.getElementById("pin-screen").classList.add("hidden");
+          document.getElementById("app").classList.remove("hidden");
+          // Show master reset button only for Devansh
+          if (role === "him") {
+            var mrBtn = document.getElementById("master-reset-btn");
+            if (mrBtn) mrBtn.classList.remove("hidden");
+          }
+          initFirebaseSync();
+          render();
+        } else {
+          pinError.classList.remove("hidden");
+          pinInput.value = "";
+          pinInput.focus();
+          setTimeout(function () { pinError.classList.add("hidden"); }, 2500);
+        }
+      }
+
+      pinSubmit.addEventListener("click", tryPin);
+      pinInput.addEventListener("keydown", function (e) { if (e.key === "Enter") tryPin(); });
     }
   </script>
 
@@ -1790,7 +2304,7 @@
        T6.4 — renderSelectedDay(day)
        Core day-browser renderer. Called on load and whenever the user
        taps a thumbnail to browse a different day.
-
+ 
        • Unlocked day (noon has passed) → show message card + upload zone
        • Locked day (future)            → show locked card with countdown
        =================================================================== */
@@ -1863,6 +2377,9 @@
       // T6.6 — Rebuild thumbnail strip to show new thumb-selected highlight
       const tripState = getTripDay();
       buildThumbnailStrip(tripState.status === "active" ? tripState.day : null);
+
+      // Show comments for this day (Firebase)
+      if (typeof renderComments === "function") renderComments(day);
     }
 
     /* -- Main render function ----------------------------------------- */
@@ -1909,8 +2426,8 @@
       }
     }
 
-    /* -- Boot --------------------------------------------------------- */
-    document.addEventListener("DOMContentLoaded", render);
+    /* -- Boot: render() is called from initPinScreen after PIN entry -- */
+    // document.addEventListener("DOMContentLoaded", render); // disabled — PIN gate calls render()
 
   </script>
 
@@ -1967,7 +2484,8 @@
       if (!selectedDay) return;
 
       try {
-        const dataURL = await readFileAsDataURL(file);
+        let dataURL = await readFileAsDataURL(file);
+        dataURL = await compressImage(dataURL); // compress before saving to Firestore
         const saved = savePhoto(selectedDay, dataURL);
 
         if (saved) {
@@ -2221,19 +2739,47 @@
        =================================================================== */
     function initReset() {
       const btn = $("reset-btn");
-      if (!btn) return;
+      if (btn) {
+        btn.addEventListener("click", () => {
+          const confirmed = window.confirm(
+            "🗑️  Delete ALL saved photos?\n\n" +
+            "This cannot be undone.\n" +
+            "Only do this once the trip is over."
+          );
+          if (confirmed) {
+            deleteAllPhotos();
+            location.reload();
+          }
+        });
+      }
 
-      btn.addEventListener("click", () => {
-        const confirmed = window.confirm(
-          "🗑️  Delete ALL saved photos?\n\n" +
-          "This cannot be undone.\n" +
-          "Only do this once the trip is over."
-        );
-        if (confirmed) {
-          deleteAllPhotos();
-          location.reload();
-        }
-      });
+      // Master reset — Devansh-only, password-gated, wipes everything
+      const masterBtn = $("master-reset-btn");
+      if (masterBtn) {
+        masterBtn.addEventListener("click", () => {
+          const pwd = window.prompt("🔒 Enter master password to delete ALL data:");
+          if (pwd === null) return; // cancelled
+          if (pwd !== "1123") {
+            alert("❌ Incorrect password.");
+            return;
+          }
+          const confirmed = window.confirm(
+            "⚠️ MASTER RESET\n\n" +
+            "This will permanently delete ALL photos and notes for all 10 days.\n\n" +
+            "This cannot be undone. Continue?"
+          );
+          if (!confirmed) return;
+          masterDeleteAll()
+            .then(() => {
+              alert("✅ All data deleted from Firestore.");
+              location.reload();
+            })
+            .catch(e => {
+              alert("❌ Delete failed: " + e.message);
+              console.error("masterDeleteAll error:", e);
+            });
+        });
+      }
     }
 
 
@@ -2285,8 +2831,31 @@
       initDragDrop();    // T4.6
       initLightbox();    // T4.8
       initReset();       // T4.9
-      initTicker();      // Live countdowns
+      initTicker();      // Live D:H:M:S countdown — needed now that DEBUG_OVERRIDE_DAY is null
       initDayNav();      // T6.7 — prev/next arrows
+      initPinScreen();   // PIN gate → then calls render() + Firebase sync
+
+      // Wire comment save button — overwrites existing note, then clears textarea
+      const saveBtn = document.getElementById("comment-save-btn");
+      if (saveBtn) {
+        saveBtn.addEventListener("click", () => {
+          const text = (document.getElementById("comment-input").value || "").trim();
+          if (!text) return;
+          saveComment(selectedDay, text);
+          document.getElementById("comment-input").value = ""; // clear after save
+          renderComments(selectedDay);
+        });
+      }
+      // Wire comment delete button
+      const deleteBtn = document.getElementById("comment-delete-btn");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", () => {
+          if (!confirm("Delete your note for this day?")) return;
+          deleteComment(selectedDay);
+          document.getElementById("comment-input").value = "";
+          renderComments(selectedDay);
+        });
+      }
     });
 
   </script>
