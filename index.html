@@ -1446,10 +1446,22 @@
         Check back soon! ☀️
       </p>
 
-      <!-- Countdown to noon -->
-      <div class="countdown-pill">
-        <span id="unlock-countdown">—</span>
-        <span class="countdown-label">until unlock</span>
+      <!-- D:H:M:S countdown to noon unlock -->
+      <div class="countdown-grid" id="unlock-grid" aria-live="polite">
+        <div class="countdown-unit">
+          <span class="countdown-value" id="ul-hours">—</span>
+          <span class="countdown-label">Hours</span>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit">
+          <span class="countdown-value" id="ul-mins">—</span>
+          <span class="countdown-label">Mins</span>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit">
+          <span class="countdown-value" id="ul-secs">—</span>
+          <span class="countdown-label">Secs</span>
+        </div>
       </div>
 
     </section><!-- /#state-locked -->
@@ -2294,10 +2306,24 @@
       updateBeforeCountdown(); // set immediately; ticker keeps it live
     }
 
+    /* Updates the H:M:S grid on the locked screen */
+    function updateLockedCountdown() {
+      const now = new Date();
+      const unlockToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+        TRIP_CONFIG.UNLOCK_HOUR, 0, 0);
+      const totalSecs = Math.max(0, Math.floor((unlockToday - now) / 1000));
+      const h = Math.floor(totalSecs / 3600);
+      const m = Math.floor((totalSecs % 3600) / 60);
+      const s = totalSecs % 60;
+      const p = n => String(n).padStart(2, "0");
+      const ulH = $("ul-hours"); if (ulH) ulH.textContent = p(h);
+      const ulM = $("ul-mins");  if (ulM) ulM.textContent = p(m);
+      const ulS = $("ul-secs");  if (ulS) ulS.textContent = p(s);
+    }
+
     /* -- Populate the "locked" state ---------------------------------- */
     function populateLockedState() {
-      const remaining = getTimeUntilUnlock();
-      $("unlock-countdown").textContent = remaining || "any moment now";
+      updateLockedCountdown(); // set immediately; ticker keeps it live
     }
 
     /* ===================================================================
@@ -2795,12 +2821,14 @@
         // Live D:H:M:S countdown on the before-state
         if (status === "before") updateBeforeCountdown();
 
-        // Update "Xh Ym until unlock" in the locked-state
+        // Update H:M:S grid in the locked-state
         if (status === "locked") {
-          const t = getTimeUntilUnlock();
-          const el = $("unlock-countdown");
-          if (el) el.textContent = t || "any moment now…";
-          if (!t) render(); // just crossed noon — re-render to show Day 1
+          updateLockedCountdown();
+          // Re-render the moment noon is crossed
+          const now = new Date();
+          const unlockToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(),
+            TRIP_CONFIG.UNLOCK_HOUR, 0, 0);
+          if (now >= unlockToday) render();
         }
       }, 1_000); // tick every second for live countdown
     }
